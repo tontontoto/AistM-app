@@ -12,6 +12,7 @@ export default function Home() {
         <Link href="/login">ログイン</Link>
         <Link href="/projects">プロジェクト管理</Link>
         <Link href="/projects/addproject">プロジェクト追加</Link>
+        <Link href="/user/profile">ユーザープロフィール</Link>
       </div>
     </div>
   );
