@@ -40,7 +40,7 @@ export default function page() {
                         
                         <div className="border border-gray-300 rounded-lg px-3">
                             {tasks.map((t) => (
-                            <TaskCard task_title={t.title} task_id={t.id} />
+                                <TaskCard key={t.id} task_title={t.title} task_id={t.id} />
                             ))}
                         </div>
                     </div>

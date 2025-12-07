@@ -1,7 +1,13 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default function Home() {
+  // const isFirstRender = false;
+  // if (!isFirstRender) {
+  //   redirect("/projects");
+  // }
+
   return (
     <div>
       <h1>AistM 作業管理ツール</h1>
