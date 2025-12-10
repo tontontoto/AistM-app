@@ -1,7 +1,4 @@
-# aistm-backend/Dockerfile
-
-# PHP-FPMのベースイメージを使用
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # 必要なシステムパッケージとPHP拡張機能をインストール
 RUN apt-get update && apt-get install -y \
