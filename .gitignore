@@ -1,0 +1,8 @@
+# 環境変数ファイル（機密情報を含む）
+.env
+*.env
+!.env.example
+
+# Docker関連
+db_data/
+*.log
