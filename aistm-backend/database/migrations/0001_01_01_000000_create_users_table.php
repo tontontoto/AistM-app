@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();                                    // ユーザーID
-            $table->string('username')->unique();            // ユーザー名
-            $table->string('email')->unique();               // メールアドレス
+            $table->string('username');                      // ユーザー名
+            $table->string('email')->unique();               // メールアドレス（ユニーク）
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');                      // パスワード
+            $table->string('provider')->nullable();          // SNSプロバイダー（google, github等）
+            $table->string('provider_id')->nullable();       // SNSプロバイダーのユーザーID
             $table->rememberToken();
             $table->timestamps();
         });
