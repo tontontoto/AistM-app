@@ -37,6 +37,10 @@ class SocialAuthController extends Controller
             // ログイン
             Auth::login($user, true);
 
+            // 最終ログイン日時を更新
+            $user->last_login_at = now();
+            $user->save();
+
             // ログ出力（デバッグ用）
             Log::info('User logged in via ' . $provider, ['user_id' => $user->id, 'email' => $user->email]);
 

@@ -3,7 +3,8 @@ import Input from '../(components)/input'
 import Button from '../(components)/button'
 
 export default function LoginPage() {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+    // Use backend base URL (web routes) so redirect endpoints are correct
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
     return (
         <div className="w-[400px] mx-auto my-20 flex flex-col items-center gap-6">

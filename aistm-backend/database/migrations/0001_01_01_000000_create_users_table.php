@@ -13,14 +13,21 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();                                    // ユーザーID
-            $table->string('username');                      // ユーザー名
-            $table->string('email')->unique();               // メールアドレス（ユニーク）
+            $table->string('name')->nullable()->comment('氏名');
+            $table->string('username')->nullable()->comment('ユーザー名');
+            $table->string('email')->unique()->comment('メールアドレス');
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');                      // パスワード
-            $table->string('provider')->nullable();          // SNSプロバイダー（google, github等）
-            $table->string('provider_id')->nullable();       // SNSプロバイダーのユーザーID
+            $table->string('password')->comment('パスワード');
+            // last login timestamp
+            $table->timestamp('last_login_at')->nullable()->comment('最終ログイン日時');
+            // optional link to a task (nullable)
+            $table->unsignedBigInteger('task_id')->nullable()->comment('関連タスクID');
+            $table->string('provider')->nullable()->comment('SNSプロバイダー（google, github等）');
+            $table->string('provider_id')->nullable()->comment('SNSプロバイダーのユーザーID');
             $table->rememberToken();
             $table->timestamps();
+            // indexes
+            $table->index('task_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
