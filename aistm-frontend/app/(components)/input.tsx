@@ -23,7 +23,7 @@ export default function Input({
     value?: string;
     required?: boolean;
     placeholder?: string;
-    onChange?: (value: string) => void;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: () => void;
 }) {
     const [values, setValues] = useState<string[]>([""]);
@@ -51,7 +51,7 @@ export default function Input({
                     pattern={input_pattern || undefined}
                     className="border m-2"
                     value={value ?? undefined}
-                    onChange={(e) => onChange?.(e.target.value)}
+                    onChange={onChange}
                     required={required}
                     placeholder={placeholder}
                     onBlur={onBlur}
