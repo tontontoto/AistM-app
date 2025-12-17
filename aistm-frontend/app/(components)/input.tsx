@@ -8,11 +8,23 @@ export default function Input({
     input_id,
     input_type,
     input_pattern,
+    input_name,
+    value,
+    required,
+    placeholder,
+    onChange,
+    onBlur,
 }: {
     input_title: string;
     input_id: string;
     input_type: string;
     input_pattern: string;
+    input_name?: string;
+    value?: string;
+    required?: boolean;
+    placeholder?: string;
+    onChange?: (value: string) => void;
+    onBlur?: () => void;
 }) {
     const [values, setValues] = useState<string[]>([""]);
 
@@ -32,7 +44,18 @@ export default function Input({
         return (
             <div>
                 <label htmlFor={input_id}>{input_title}</label>
-                <input type={input_type} id={input_id} className="border m-2"/>
+                <input
+                    type={input_type}
+                    id={input_id}
+                    name={input_name || input_id}
+                    pattern={input_pattern || undefined}
+                    className="border m-2"
+                    value={value ?? undefined}
+                    onChange={(e) => onChange?.(e.target.value)}
+                    required={required}
+                    placeholder={placeholder}
+                    onBlur={onBlur}
+                />
             </div>
         );
     }
@@ -51,6 +74,7 @@ export default function Input({
                             className="border m-2"
                             value={val}
                             onChange={(e) => updateValue(idx, e.target.value)}
+                            onBlur={onBlur}
                         />
                         {idx === values.length - 1 && (
                             <AddButton onClick={addInput} />
