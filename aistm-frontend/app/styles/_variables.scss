@@ -1,0 +1,47 @@
+// Typography scale
+$text-xs: 12px;
+$text-sm: 14px;
+$text-base: 16px;
+$text-md: 18px;
+$text-lg: 20px;
+$text-xl: 24px;
+$text-2xl: 30px;
+$text-3xl: 36px; //h1とか
+
+// Spacing scale
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-6: 24px;
+$space-8: 32px;
+
+// Color palette (example)
+$color-bg: #ffffff;
+$color-fg: #171717;
+$color-primary: #2563eb; // blue-600
+$color-primary-hover: #1d4ed8; // blue-700
+
+// Expose as CSS variables
+:root {
+  --text-xs: #{$text-xs};
+  --text-sm: #{$text-sm};
+  --text-base: #{$text-base};
+  --text-md: #{$text-md};
+  --text-lg: #{$text-lg};
+  --text-xl: #{$text-xl};
+  --text-2xl: #{$text-2xl};
+  --text-3xl: #{$text-3xl};
+
+  --space-1: #{$space-1};
+  --space-2: #{$space-2};
+  --space-3: #{$space-3};
+  --space-4: #{$space-4};
+  --space-6: #{$space-6};
+  --space-8: #{$space-8};
+
+  --color-bg: #{$color-bg};
+  --color-fg: #{$color-fg};
+  --color-primary: #{$color-primary};
+  --color-primary-hover: #{$color-primary-hover};
+}
