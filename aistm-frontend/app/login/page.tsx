@@ -17,6 +17,13 @@ export default function page() {
     return base.replace(/\/+$/, "");
   }, []);
 
+  const githubAuthUrl = useMemo(() => {
+    // APIベースURLから/apiを削除して、GitHub認証エンドポイントを追加
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+    const cleanBase = base.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+    return `${cleanBase}/api/auth/github`;
+  }, []);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -71,7 +78,7 @@ export default function page() {
           {/* GitHubログインボタン */}
           <div className="mb-6">
             <a
-              href={`${apiBase}/auth/github`}
+              href={githubAuthUrl}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

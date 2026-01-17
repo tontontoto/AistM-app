@@ -14,6 +14,7 @@ export default function Input({
     placeholder,
     onChange,
     onBlur,
+    className,
 }: {
     input_title: string;
     input_id: string;
@@ -25,6 +26,7 @@ export default function Input({
     placeholder?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: () => void;
+    className?: string;
 }) {
     const [values, setValues] = useState<string[]>([""]);
 
@@ -43,13 +45,12 @@ export default function Input({
     if (input_pattern === "" || input_type !== "text") {
         return (
             <div>
-                <label htmlFor={input_id}>{input_title}</label>
                 <input
                     type={input_type}
                     id={input_id}
                     name={input_name || input_id}
                     pattern={input_pattern || undefined}
-                    className="border m-2"
+                    className={className || "border m-2"}
                     value={value ?? undefined}
                     onChange={onChange}
                     required={required}
