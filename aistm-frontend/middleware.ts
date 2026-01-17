@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const publicPaths = ["/", "/login", "/signup"]; // TOPとログイン・サインアップは誰でも閲覧可
+  const publicPaths = ["/", "/login", "/signup", "/auth/callback", "/set-password"]; // TOPとログイン・サインアップ、認証コールバック、パスワード設定は誰でも閲覧可
 
   // _next/static や画像などのアセットはスキップ
   if (

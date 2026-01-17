@@ -2,41 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Button from "./(components)/button";
 
 export default function Home() {
-  const router = useRouter();
-
-  const quickLogin = async () => {
-    // 簡易ログイン: 最初のユーザーを取得してログイン
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
-      const base = apiBase.replace(/\/+$/, "");
-      const response = await fetch(`${base}/master/users`);
-      if (response.ok) {
-        const users = await response.json().catch(() => []);
-        if (users.length > 0) {
-          const firstUser = users[0];
-          document.cookie = `auth=1; Path=/; Max-Age=${60 * 60 * 24 * 7}`; // 7日
-          document.cookie = `user_id=${firstUser.id}; Path=/; Max-Age=${60 * 60 * 24 * 7}`; // 7日
-          router.push("/projects");
-          return;
-        }
-      }
-    } catch (err) {
-      console.error("簡易ログインエラー:", err);
-    }
-    // フォールバック: ユーザーIDなしでログイン
-    document.cookie = `auth=1; Path=/; Max-Age=${60 * 60 * 24 * 7}`; // 7日
-    router.push("/projects");
-  };
-
-  const quickLogout = () => {
-    document.cookie = "auth=; Path=/; Max-Age=0";
-    document.cookie = "user_id=; Path=/; Max-Age=0";
-    router.push("/");
-  };
   // const isFirstRender = false;
   // if (!isFirstRender) {
   //   redirect("/projects");
@@ -79,10 +46,6 @@ export default function Home() {
               >
                 <span className="text-blue-600 font-semibold">タスク管理</span>
               </Link>
-            </div>
-            <div className="border-t border-gray-200 pt-6 flex flex-col gap-3">
-              <Button button_type="button" button_title="簡易ログイン" onClick={quickLogin} />
-              <Button button_type="button" button_title="簡易ログアウト" onClick={quickLogout} />
             </div>
           </div>
         </div>
