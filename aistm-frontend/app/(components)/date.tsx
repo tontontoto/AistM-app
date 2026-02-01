@@ -12,12 +12,15 @@ export default function Date({
     required?: boolean;
 }) {
   return (
-    <div className="flex flex-col my-2">
-        <label htmlFor={id || "date"}>日付選択</label>
+    <div className="w-full">
+        <label htmlFor={id || "date"} className="block text-sm font-medium text-gray-700 mb-2">
+            日付選択
+            {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
         <input 
             type="date" 
             id={id || "date"} 
-            className="border"
+            className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-800"
             value={value}
             onChange={onChange}
             required={required}

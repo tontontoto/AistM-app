@@ -73,6 +73,7 @@ class TaskController extends Controller
             'user_id' => 'sometimes|required|exists:users,id',
             'schedule' => 'nullable|date',
             'related_url' => 'nullable|url|max:255',
+            'is_completed' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {

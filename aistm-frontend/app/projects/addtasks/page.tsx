@@ -7,6 +7,7 @@ import Select from "../../(components)/select";
 import Textarea from "../../(components)/textarea";
 import Date from "../../(components)/date";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
@@ -157,101 +158,169 @@ export default function AddTaskPage() {
     };
 
     return (
-        <div className="w-full">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">タスク新規作成</h1>
-                <p className="text-gray-600">新しいタスクを作成します</p>
-            </div>
-
-            {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-                    {error}
-                </div>
-            )}
-
-            {masterDataLoading ? (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
-                    <div className="flex items-center justify-center py-12">
-                        <p className="text-gray-500">マスターデータを読み込み中...</p>
+        <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8 px-4">
+            <div className="max-w-4xl mx-auto">
+                {/* ヘッダー */}
+                <div className="mb-8">
+                    <Link href="/projects/tasks" className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        タスク一覧に戻る
+                    </Link>
+                    <div className="text-center">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">タスク新規作成</h1>
+                        <p className="text-gray-600">新しいタスクを作成します</p>
                     </div>
                 </div>
-            ) : (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <Input
-                            input_title="タスク概要"
-                            input_id="overview"
-                            input_type="text"
-                            input_pattern={""}
-                            value={formData.overview}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Select
-                            select_title="親プロジェクトの選択"
-                            select_name="project_id"
-                            select_id="project_id"
-                            options={masterData.projects.map((p) => ({ value: p.id.toString(), label: p.overview }))}
-                            value={formData.project_id}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Select
-                            select_title="タスクステータス"
-                            select_name="status_id"
-                            select_id="status_id"
-                            options={masterData.statuses.map((s) => ({ value: s.id.toString(), label: s.name }))}
-                            value={formData.status_id}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Select
-                            select_title="タスク優先度"
-                            select_name="priority_id"
-                            select_id="priority_id"
-                            options={masterData.priorities.map((p) => ({ value: p.id.toString(), label: p.name }))}
-                            value={formData.priority_id}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Textarea 
-                            textarea_title="タスクの説明"
-                            id="detail"
-                            value={formData.detail}
-                            onChange={handleChange}
-                        />
-                        <Select
-                            select_title="担当者"
-                            select_name="user_id"
-                            select_id="user_id"
-                            options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${u.email})` }))}
-                            value={formData.user_id}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Date 
-                            id="schedule"
-                            value={formData.schedule}
-                            onChange={handleChange}
-                        />
-                        <Input
-                            input_title="関連リンク"
-                            input_id="related_url"
-                            input_type="url"
-                            input_pattern="https://.*"
-                            value={formData.related_url}
-                            onChange={handleChange}
-                        />
-                        <div className="pt-4 border-t border-gray-200">
-                            <Button 
-                                button_type="submit" 
-                                button_title={loading ? "作成中..." : "タスクを作成"}
-                                disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0 || masterData.projects.length === 0}
-                            />
+
+                {/* エラーメッセージ */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
+                        <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p className="text-red-700">{error}</p>
+                    </div>
+                )}
+
+                {masterDataLoading ? (
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
+                        <div className="flex items-center justify-center py-12">
+                            <div className="flex flex-col items-center gap-3">
+                                <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p className="text-gray-500">マスターデータを読み込み中...</p>
+                            </div>
                         </div>
-                    </form>
-                </div>
-            )}
+                    </div>
+                ) : (
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* 基本情報セクション */}
+                            <div className="border-b border-gray-100 pb-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    基本情報
+                                </h2>
+                                <div className="space-y-6">
+                                    {/* タスク名 - 大きめに表示 */}
+                                    <div className="w-full">
+                                        <label htmlFor="overview" className="block text-lg font-semibold text-gray-800 mb-3">
+                                            タスク名
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="overview"
+                                            name="overview"
+                                            value={formData.overview}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="タスク名を入力してください"
+                                            className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <Select
+                                            select_title="親プロジェクトの選択"
+                                            select_name="project_id"
+                                            select_id="project_id"
+                                            options={masterData.projects.map((p) => ({ value: p.id.toString(), label: p.overview }))}
+                                            value={formData.project_id}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                        <Select
+                                            select_title="タスクステータス"
+                                            select_name="status_id"
+                                            select_id="status_id"
+                                            options={masterData.statuses.map((s) => ({ value: s.id.toString(), label: s.name }))}
+                                            value={formData.status_id}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                        <Select
+                                            select_title="タスク優先度"
+                                            select_name="priority_id"
+                                            select_id="priority_id"
+                                            options={masterData.priorities.map((p) => ({ value: p.id.toString(), label: p.name }))}
+                                            value={formData.priority_id}
+                                            onChange={handleChange}
+                                            required
+                                            isPriority={true}
+                                        />
+                                        <Select
+                                            select_title="担当者"
+                                            select_name="user_id"
+                                            select_id="user_id"
+                                            options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${u.email})` }))}
+                                            value={formData.user_id}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                        <Date 
+                                            id="schedule"
+                                            value={formData.schedule}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 詳細情報セクション */}
+                            <div className="border-b border-gray-100 pb-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    詳細情報
+                                </h2>
+                                <div className="space-y-6">
+                                    <Textarea 
+                                        textarea_title="タスクの説明"
+                                        id="detail"
+                                        value={formData.detail}
+                                        onChange={handleChange}
+                                    />
+                                    <Input
+                                        input_title="関連リンク"
+                                        input_id="related_url"
+                                        input_type="url"
+                                        input_pattern="https://.*"
+                                        value={formData.related_url}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 送信ボタン */}
+                            <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
+                                <Link
+                                    href="/projects/tasks"
+                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                >
+                                    キャンセル
+                                </Link>
+                                <Button 
+                                    button_type="submit" 
+                                    button_title={loading ? "作成中..." : "タスクを作成"}
+                                    disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0 || masterData.projects.length === 0}
+                                />
+                            </div>
+                        </form>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

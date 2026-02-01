@@ -100,13 +100,10 @@ export default function page() {
                     return false;
                 }
 
-                const data = await response.json();
-                if (data.success) {
-                    setEmailStatus("sent");
-                    setEmailSent(true);
-                    return true;
-                }
-                return false;
+                // レスポンスが成功した場合
+                setEmailStatus("sent");
+                setEmailSent(true);
+                return true;
             } catch (err) {
                 setError("メール送信に失敗しました。時間をおいて再度お試しください。");
                 setEmailStatus("available");

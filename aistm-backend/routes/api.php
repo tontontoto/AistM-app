@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/signup', RegisterController::class);
 Route::get('/email/check', CheckEmailController::class);
 Route::post('/login', LoginController::class);
+Route::post('/email/send-registration', \App\Http\Controllers\Auth\SendRegistrationEmailController::class);
+Route::post('/set-password', \App\Http\Controllers\Auth\SetPasswordController::class);
 
 // ユーザー関連のルート
 Route::get('/users/{id}', [UserController::class, 'show']);

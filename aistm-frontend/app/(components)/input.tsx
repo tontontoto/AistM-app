@@ -44,13 +44,19 @@ export default function Input({
 
     if (input_pattern === "" || input_type !== "text") {
         return (
-            <div>
+            <div className="w-full">
+                {input_title && (
+                    <label htmlFor={input_id} className="block text-sm font-medium text-gray-700 mb-2">
+                        {input_title}
+                        {required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                )}
                 <input
                     type={input_type}
                     id={input_id}
                     name={input_name || input_id}
                     pattern={input_pattern || undefined}
-                    className={className || "border m-2"}
+                    className={className || "w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-800 placeholder-gray-400"}
                     value={value ?? undefined}
                     onChange={onChange}
                     required={required}

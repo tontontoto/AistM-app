@@ -7,7 +7,7 @@ export default function Button({ button_type, button_title, disabled, onClick }:
                 type={button_type}
                 disabled={disabled}
                 onClick={onClick}
-                className="bg-blue-500 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded">
+                className="bg-green-600 hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2">
                 {button_title}
             </button>
         </div>
