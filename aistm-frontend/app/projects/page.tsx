@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import TaskCard from "./_components/taskCard";
 
 type Project = {
@@ -34,6 +35,27 @@ export default function page() {
         return base.replace(/\/+$/, "");
     }, []);
 
+    const handleStatusChange = async (projectId: number, statusId: number, statusName: string) => {
+        const response = await fetch(`${apiBase}/projects/${projectId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status_id: statusId }),
+        });
+
+        if (!response.ok) {
+            throw new Error("ステータスの更新に失敗しました");
+        }
+
+        // ローカルの状態も更新
+        setProjects(prev => prev.map(p => 
+            p.id === projectId 
+                ? { ...p, status: { ...p.status, id: statusId, name: statusName } }
+                : p
+        ));
+    };
+
     useEffect(() => {
         const fetchProjects = async () => {
             try {
@@ -66,9 +88,20 @@ export default function page() {
 
     return(
         <div className="w-full">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">プロジェクト一覧</h1>
-                <p className="text-gray-600">プロジェクトを管理・確認できます</p>
+            <div className="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">プロジェクト一覧</h1>
+                    <p className="text-gray-600">プロジェクトを管理・確認できます</p>
+                </div>
+                <Link
+                    href="/projects/addproject"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    新規作成
+                </Link>
             </div>
 
             {loading ? (
@@ -94,8 +127,10 @@ export default function page() {
                                 title: project.overview,
                                 assignee: project.user?.name || "未設定",
                                 status: project.status?.name || "未設定",
-                                dueDate: project.schedule || "未設定",
-                            }} 
+                                statusId: project.status?.id || 1,
+                                priority: project.priority?.name || "未設定",
+                            }}
+                            onStatusChange={handleStatusChange}
                         />
                     ))}
                 </div>
