@@ -68,6 +68,17 @@ export default function EditProjectPage() {
                 });
                 
                 if (data) {
+                    // 日付をYYYY-MM-DD形式で取得
+                    let formattedSchedule = "";
+                    if (data.schedule) {
+                        // 日付文字列からYYYY-MM-DD部分を抽出
+                        const scheduleStr = String(data.schedule);
+                        const match = scheduleStr.match(/\d{4}-\d{2}-\d{2}/);
+                        if (match) {
+                            formattedSchedule = match[0];
+                        }
+                    }
+                    
                     // 既存データをフォームに設定
                     setFormData({
                         overview: data.overview || "",
@@ -75,7 +86,7 @@ export default function EditProjectPage() {
                         priority_id: data.priority?.id?.toString() || "",
                         detail: data.detail || "",
                         user_id: data.user?.id?.toString() || "",
-                        schedule: data.schedule || "",
+                        schedule: formattedSchedule,
                         related_url: data.related_url || "",
                     });
                 }
@@ -186,9 +197,6 @@ export default function EditProjectPage() {
     return (
         <div className="w-full">
             <div className="mb-6">
-                <Link href={`/projects/${projectId}`} className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block">
-                    ← プロジェクト詳細に戻る
-                </Link>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">プロジェクト編集</h1>
                 <p className="text-gray-600">プロジェクト情報を編集します</p>
             </div>
@@ -218,6 +226,7 @@ export default function EditProjectPage() {
                         value={formData.status_id}
                         onChange={handleChange}
                         required
+                        isStatus={true}
                     />
                     <Select
                         select_title="プロジェクト優先度"

@@ -150,34 +150,35 @@ export default function ProjectDetailPage() {
 
     return (
         <div className="w-full">
-            <div className="mb-6">
-                <Link href="/projects" className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block">
-                    ← プロジェクト一覧に戻る
+            {/* ヘッダー部 */}
+            <div className="mb-6 flex items-start justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800">{project.overview}</h1>
+                </div>
+                <Link
+                    href={`/projects/${project.id}/edit`}
+                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    title="編集"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-800 mt-2">{project.overview}</h1>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
                 {/* 基本情報 */}
-                <div className="relative">
-                    {/* 編集ボタン - 右上 */}
-                    <div className="absolute top-0 right-0">
-                        <Link
-                            href={`/projects/${project.id}/edit`}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                            編集
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {/* ステータス */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-xs text-gray-500 mb-1">ステータス</p>
-                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                            project.status?.name === '企画中' ? 'bg-purple-100 text-purple-800' :
+                            project.status?.name === '進行中' ? 'bg-blue-100 text-blue-800' :
+                            project.status?.name === '完了' ? 'bg-green-100 text-green-800' :
+                            project.status?.name === '保留中' ? 'bg-gray-200 text-gray-800' :
+                            'bg-gray-100 text-gray-800'
+                        }`}>
                             {project.status?.name || "未設定"}
                         </span>
                     </div>
@@ -185,7 +186,12 @@ export default function ProjectDetailPage() {
                     {/* 優先度 */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-xs text-gray-500 mb-1">優先度</p>
-                        <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                            project.priority?.name === '高' ? 'bg-red-100 text-red-800' :
+                            project.priority?.name === '中' ? 'bg-yellow-100 text-yellow-800' :
+                            project.priority?.name === '低' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                        }`}>
                             {project.priority?.name || "未設定"}
                         </span>
                     </div>
@@ -206,15 +212,17 @@ export default function ProjectDetailPage() {
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <p className="text-xs text-gray-500 mb-1">期限</p>
                             <p className="font-semibold text-gray-800">
-                                {new Date(project.schedule).toLocaleDateString('ja-JP', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
+                                {(() => {
+                                    const scheduleStr = String(project.schedule);
+                                    const match = scheduleStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+                                    if (match) {
+                                        return `${match[1]}年${parseInt(match[2])}月${parseInt(match[3])}日`;
+                                    }
+                                    return scheduleStr;
+                                })()}
                             </p>
                         </div>
                     )}
-                    </div>
                 </div>
 
                 {/* 説明 */}

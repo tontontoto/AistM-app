@@ -158,27 +158,8 @@ export default function AddTaskPage() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8 px-4">
+        <div className="w-full min-h-screen from-gray-50 via-white to-gray-50">
             <div className="max-w-4xl mx-auto">
-                {/* ヘッダー */}
-                <div className="mb-8">
-                    <Link href="/projects/tasks" className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        タスク一覧に戻る
-                    </Link>
-                    <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                        </div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">タスク新規作成</h1>
-                        <p className="text-gray-600">新しいタスクを作成します</p>
-                    </div>
-                </div>
-
                 {/* エラーメッセージ */}
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
@@ -202,13 +183,13 @@ export default function AddTaskPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl md:p-10">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* 基本情報セクション */}
                             <div className="border-b border-gray-100 pb-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                     基本情報
                                 </h2>
@@ -248,6 +229,7 @@ export default function AddTaskPage() {
                                             value={formData.status_id}
                                             onChange={handleChange}
                                             required
+                                            isStatus={true}
                                         />
                                         <Select
                                             select_title="タスク優先度"
