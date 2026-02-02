@@ -11,12 +11,12 @@
 
 # 環境変数（ここでは設定例として記載、実際はNetlifyダッシュボードで設定）
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 # リダイレクト設定（必要に応じて）
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend.up.railway.app/api/:splat"
+  to = "https://aistm-app-production.up.railway.app/api/:splat"
   status = 200
   force = true
 
