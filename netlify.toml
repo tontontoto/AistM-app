@@ -1,4 +1,4 @@
-# netlify.toml (プロジェクトルートに配置)
+# netlify.toml (リポジトリルートに配置)
 
 [build]
   base = "aistm-frontend"
