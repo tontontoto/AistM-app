@@ -15,6 +15,7 @@ class SetPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8'],
         ]);
 
@@ -33,13 +34,15 @@ class SetPasswordController extends Controller
         }
 
         $user->update([
+            'name' => $data['name'],
             'password' => Hash::make($data['password']),
         ]);
 
         return response()->json([
-            'message' => 'パスワード設定が完了しました。',
+            'message' => 'ユーザー情報の登録が完了しました。',
             'user' => [
                 'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
             ],
         ], Response::HTTP_OK);

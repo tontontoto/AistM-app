@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TaskCard from "./_components/taskCard";
+import UserAvatar from "../../../components/UserAvatar";
 
 type User = {
     id: number;
@@ -12,6 +12,7 @@ type User = {
     name: string;
     email: string;
     login_count: number;
+    avatar_color?: string;
 };
 
 type Project = {
@@ -49,6 +50,9 @@ export default function ProfilePage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const [selectedColor, setSelectedColor] = useState("#3B82F6");
+    const [updatingColor, setUpdatingColor] = useState(false);
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -79,6 +83,7 @@ export default function ProfilePage() {
                         const userData = await userResponse.json().catch(() => null);
                         if (userData) {
                             setUser(userData);
+                                            setSelectedColor(userData.avatar_color || "#3B82F6");
                         }
                     }
                 } else if (userResponse.status === 404) {
@@ -113,6 +118,47 @@ export default function ProfilePage() {
         fetchData();
     }, [apiBase]);
 
+    // アバター色を更新
+    const handleColorChange = async (color: string) => {
+        const userId = getCookie('user_id');
+        if (!userId || !user) return;
+
+        setUpdatingColor(true);
+        try {
+            const response = await fetch(`${apiBase}/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ avatar_color: color }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUser({ ...user, avatar_color: color });
+                setSelectedColor(color);
+                setShowColorPicker(false);
+
+                // ヘッダーなどに即時反映
+                localStorage.setItem(`avatar_color_${userId}`, color);
+                window.dispatchEvent(
+                    new CustomEvent("avatarColorUpdated", {
+                        detail: { userId, color },
+                    })
+                );
+            }
+        } catch (err) {
+            console.error("色の更新エラー:", err);
+        } finally {
+            setUpdatingColor(false);
+        }
+    };
+
+    const colorPresets = [
+        "#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6",
+        "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1",
+    ];
+
     if (loading) {
         return (
             <div className="w-full max-w-6xl mx-auto px-4 py-8">
@@ -138,25 +184,73 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-4 py-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">ユーザープロフィール</h1>
-                <p className="text-gray-600">あなたのプロジェクトとタスクを確認できます</p>
+        <div className="w-full max-w-6xl mx-auto px-4 py-6 sm:py-8">
+            <div className="mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">ユーザープロフィール</h1>
+                <p className="text-sm sm:text-base text-gray-600">あなたのプロジェクトとタスクを確認できます</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* プロフィール情報 */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 sticky top-8">
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 sm:p-6 lg:sticky lg:top-8">
                         <div className="flex flex-col items-center">
-                            <Image
-                                src="/icon.png"
-                                alt="Profile"
-                                width={120}
-                                height={120}
-                                className="rounded-full mb-4 border-4 border-gray-200"
-                            />
-                            <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                            <div className="relative mb-3 sm:mb-4">
+                                <UserAvatar
+                                    name={user.name}
+                                    username={user.username}
+                                    email={user.email}
+                                    avatarColor={user.avatar_color}
+                                    size="xl"
+                                />
+                                <button
+                                    onClick={() => setShowColorPicker(!showColorPicker)}
+                                    className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg border-2 border-gray-200 hover:bg-gray-50 transition-colors"
+                                    title="アバター色を変更"
+                                >
+                                    <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* カラーピッカー */}
+                            {showColorPicker && (
+                                <div className="mb-4 w-full p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <h4 className="text-sm font-semibold text-gray-700 mb-3">アバター色を選択</h4>
+                                    <div className="grid grid-cols-5 gap-2 mb-3">
+                                        {colorPresets.map((color) => (
+                                            <button
+                                                key={color}
+                                                onClick={() => handleColorChange(color)}
+                                                disabled={updatingColor}
+                                                className={`w-10 h-10 rounded-full transition-all ${
+                                                    selectedColor === color ? 'ring-2 ring-offset-2 ring-blue-500' : 'hover:scale-110'
+                                                }`}
+                                                style={{ backgroundColor: color }}
+                                                title={color}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <input
+                                            type="color"
+                                            value={selectedColor}
+                                            onChange={(e) => setSelectedColor(e.target.value)}
+                                            className="w-12 h-10 rounded cursor-pointer"
+                                        />
+                                        <button
+                                            onClick={() => handleColorChange(selectedColor)}
+                                            disabled={updatingColor}
+                                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
+                                        >
+                                            {updatingColor ? "更新中..." : "カスタム色を適用"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">
                                 {user.name || user.username || "ユーザー"}
                             </h3>
                             <div className="text-center space-y-2 text-sm text-gray-600 mb-4">
@@ -190,14 +284,14 @@ export default function ProfilePage() {
                 </div>
 
                 {/* プロジェクトとタスク */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                     {/* 在籍プロジェクト */}
                     <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-bold text-gray-800">在籍プロジェクト</h2>
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">在籍プロジェクト</h2>
                             <Link
                                 href="/projects/addproject"
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline"
                             >
                                 + 新規作成
                             </Link>
@@ -244,11 +338,11 @@ export default function ProfilePage() {
 
                     {/* 作業タスク */}
                     <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-bold text-gray-800">あなたの作業タスク</h2>
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">あなたの作業タスク</h2>
                             <Link
                                 href="/projects/addtasks"
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline"
                             >
                                 + 新規作成
                             </Link>

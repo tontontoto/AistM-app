@@ -33,7 +33,7 @@ class MasterDataController extends Controller
      */
     public function getUsers()
     {
-        $users = User::select('id', 'name', 'email')->get();
+        $users = User::select('id', 'name', 'email', 'username', 'avatar_color')->get();
         return response()->json($users);
     }
 
@@ -45,7 +45,7 @@ class MasterDataController extends Controller
         return response()->json([
             'statuses' => Status::all(),
             'priorities' => Priority::all(),
-            'users' => User::select('id', 'name', 'email')->get(),
+            'users' => User::select('id', 'name', 'email', 'username', 'avatar_color')->get(),
         ]);
     }
 

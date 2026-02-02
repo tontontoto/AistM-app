@@ -71,9 +71,9 @@ export default function TasksPage() {
 
     return (
         <div className="w-full">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">タスク一覧</h1>
-                <p className="text-gray-600">タスクを管理・確認できます</p>
+            <div className="mb-4 sm:mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">タスク一覧</h1>
+                <p className="text-sm sm:text-base text-gray-600">タスクを管理・確認できます</p>
             </div>
 
             {loading ? (
@@ -86,17 +86,17 @@ export default function TasksPage() {
                     <p className="text-gray-400 text-sm mt-2">新しいタスクを作成してください</p>
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     {tasks.map((task) => (
                         <Link
                             key={task.id}
                             href={`/projects/tasks/${task.id}`}
-                            className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-200"
+                            className="block bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-all duration-200"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{task.overview}</h3>
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">{task.overview}</h3>
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                                         <span className="flex items-center gap-1">
                                             <span className="text-gray-500">プロジェクト:</span>
                                             <span className="font-medium">{task.project?.overview || "未設定"}</span>

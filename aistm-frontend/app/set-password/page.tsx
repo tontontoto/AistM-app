@@ -1,17 +1,20 @@
 "use client";
 
-import React, { FormEvent, useEffect, useState, useMemo } from "react";
+import React, { FormEvent, useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Input from "../(components)/input";
 import Button from "../(components)/button";
 
+export const dynamic = "force-dynamic";
+
 // メールアドレスの正規表現
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-export default function SetPasswordPage() {
+function SetPasswordContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -39,6 +42,11 @@ export default function SetPasswordPage() {
             return;
         }
 
+        if (!name.trim()) {
+            setError("入力してください。");
+            return;
+        }
+
         if (password.length < 8) {
             setError("パスワードは8文字以上で入力してください。");
             return;
@@ -57,7 +65,7 @@ export default function SetPasswordPage() {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, name, password }),
             });
 
             if (!response.ok) {
@@ -91,12 +99,12 @@ export default function SetPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-8 sm:py-12 px-4">
             <div className="w-full max-w-md">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">パスワード設定</h1>
-                        <p className="text-gray-600">新しいパスワードを設定してください</p>
+                <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">ユーザー情報登録</h1>
+                        <p className="text-sm sm:text-base text-gray-600">お名前とパスワードを設定してください</p>
                     </div>
 
                     {success ? (
@@ -106,7 +114,7 @@ export default function SetPasswordPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <p className="text-lg font-semibold text-gray-800 mb-2">パスワード設定が完了しました</p>
+                            <p className="text-lg font-semibold text-gray-800 mb-2">ユーザー情報の登録が完了しました</p>
                             <p className="text-gray-600">プロジェクト一覧ページにリダイレクトします...</p>
                         </div>
                     ) : (
@@ -133,6 +141,22 @@ export default function SetPasswordPage() {
                                     }}
                                     required
                                     placeholder="メールアドレス"
+                                    className="border-2 border-gray-300 rounded-lg p-2 w-full"
+                                    disabled
+                                />
+
+                                <Input
+                                    input_title="お名前"
+                                    input_id="name"
+                                    input_type="text"
+                                    input_pattern=""
+                                    value={name}
+                                    onChange={(e) => {
+                                        setName(e.target.value);
+                                        setError(null);
+                                    }}
+                                    required
+                                    placeholder="お名前を入力"
                                     className="border-2 border-gray-300 rounded-lg p-2 w-full"
                                 />
 
@@ -168,7 +192,7 @@ export default function SetPasswordPage() {
 
                                 <Button
                                     button_type="submit"
-                                    button_title={loading ? "設定中..." : "パスワードを設定"}
+                                    button_title={loading ? "登録中..." : "登録する"}
                                     disabled={loading}
                                 />
                             </form>
@@ -188,5 +212,23 @@ export default function SetPasswordPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function SetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-8 sm:py-12 px-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+                        <div className="text-center">
+                            <p className="text-gray-600">読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
+            <SetPasswordContent />
+        </Suspense>
     );
 }

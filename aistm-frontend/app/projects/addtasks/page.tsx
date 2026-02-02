@@ -162,11 +162,11 @@ export default function AddTaskPage() {
             <div className="max-w-4xl mx-auto">
                 {/* エラーメッセージ */}
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
+                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
                         <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <p className="text-red-700">{error}</p>
+                        <p className="text-sm sm:text-base text-red-700">{error}</p>
                     </div>
                 )}
 
@@ -183,20 +183,20 @@ export default function AddTaskPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl md:p-10">
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 sm:p-6 md:p-10">
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                             {/* 基本情報セクション */}
-                            <div className="border-b border-gray-100 pb-6">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="border-b border-gray-100 pb-4 sm:pb-6">
+                                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                     基本情報
                                 </h2>
-                                <div className="space-y-6">
+                                <div className="space-y-4 sm:space-y-6">
                                     {/* タスク名 - 大きめに表示 */}
                                     <div className="w-full">
-                                        <label htmlFor="overview" className="block text-lg font-semibold text-gray-800 mb-3">
+                                        <label htmlFor="overview" className="block text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
                                             タスク名
                                             <span className="text-red-500 ml-1">*</span>
                                         </label>
@@ -208,10 +208,10 @@ export default function AddTaskPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="タスク名を入力してください"
-                                            className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
+                                            className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                         <Select
                                             select_title="親プロジェクトの選択"
                                             select_name="project_id"
@@ -260,14 +260,14 @@ export default function AddTaskPage() {
                             </div>
 
                             {/* 詳細情報セクション */}
-                            <div className="border-b border-gray-100 pb-6">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="border-b border-gray-100 pb-4 sm:pb-6">
+                                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     詳細情報
                                 </h2>
-                                <div className="space-y-6">
+                                <div className="space-y-4 sm:space-y-6">
                                     <Textarea 
                                         textarea_title="タスクの説明"
                                         id="detail"
@@ -286,18 +286,20 @@ export default function AddTaskPage() {
                             </div>
 
                             {/* 送信ボタン */}
-                            <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
+                            <div className="pt-4 sm:pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                                 <Link
                                     href="/projects/tasks"
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                    className="w-full sm:w-auto text-center px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                                 >
                                     キャンセル
                                 </Link>
-                                <Button 
-                                    button_type="submit" 
-                                    button_title={loading ? "作成中..." : "タスクを作成"}
-                                    disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0 || masterData.projects.length === 0}
-                                />
+                                <div className="w-full sm:w-auto">
+                                    <Button 
+                                        button_type="submit" 
+                                        button_title={loading ? "作成中..." : "タスクを作成"}
+                                        disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0 || masterData.projects.length === 0}
+                                    />
+                                </div>
                             </div>
                         </form>
                     </div>

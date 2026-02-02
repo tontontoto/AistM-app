@@ -17,6 +17,7 @@ Route::post('/set-password', \App\Http\Controllers\Auth\SetPasswordController::c
 
 // ユーザー関連のルート
 Route::get('/users/{id}', [UserController::class, 'show']);
+Route::put('/users/{id}', [UserController::class, 'update']);
 Route::get('/users/{id}/projects', [UserController::class, 'getProjects']);
 Route::get('/users/{id}/tasks', [UserController::class, 'getTasks']);
 

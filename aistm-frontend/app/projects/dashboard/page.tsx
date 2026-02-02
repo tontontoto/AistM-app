@@ -160,33 +160,35 @@ export default function DashboardPage() {
     return (
         <div className="w-full">
             {/* ヘッダー部 */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">ダッシュボード</h1>
-                <p className="text-lg text-gray-600">
+            <div className="mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">ダッシュボード</h1>
+                <p className="text-base sm:text-lg text-gray-600">
                     ようこそ、<span className="font-semibold text-gray-800">{user?.name || "ユーザー"}</span> さん
                 </p>
             </div>
 
             {/* プロジェクト セクション */}
-            <div className="mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    プロジェクト
-                    <span className="text-sm font-normal text-gray-500">（合計: {projects.length}件）</span>
+            <div className="mb-6 sm:mb-8">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        プロジェクト
+                    </div>
+                    <span className="text-xs sm:text-sm font-normal text-gray-500">（合計: {projects.length}件）</span>
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {statusCards.map((status) => (
                         <div
                             key={status.label}
-                            className={`${status.lightColor} rounded-xl p-6 border border-gray-200 shadow-sm`}
+                            className={`${status.lightColor} rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm`}
                         >
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-sm font-medium ${status.textColor}`}>{status.label}</span>
-                                <span className={`w-3 h-3 rounded-full ${status.color}`}></span>
+                            <div className="flex items-center justify-between mb-1 sm:mb-2">
+                                <span className={`text-xs sm:text-sm font-medium ${status.textColor}`}>{status.label}</span>
+                                <span className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${status.color}`}></span>
                             </div>
-                            <p className={`text-4xl font-bold ${status.textColor}`}>
+                            <p className={`text-2xl sm:text-4xl font-bold ${status.textColor}`}>
                                 {projectCounts[status.label as keyof StatusCount]}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">件</p>
@@ -197,24 +199,26 @@ export default function DashboardPage() {
 
             {/* タスク セクション */}
             <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    タスク
-                    <span className="text-sm font-normal text-gray-500">（合計: {tasks.length}件）</span>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        タスク
+                    </div>
+                    <span className="text-xs sm:text-sm font-normal text-gray-500">（合計: {tasks.length}件）</span>
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {statusCards.map((status) => (
                         <div
                             key={status.label}
-                            className={`${status.lightColor} rounded-xl p-6 border border-gray-200 shadow-sm`}
+                            className={`${status.lightColor} rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm`}
                         >
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-sm font-medium ${status.textColor}`}>{status.label}</span>
-                                <span className={`w-3 h-3 rounded-full ${status.color}`}></span>
+                            <div className="flex items-center justify-between mb-1 sm:mb-2">
+                                <span className={`text-xs sm:text-sm font-medium ${status.textColor}`}>{status.label}</span>
+                                <span className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${status.color}`}></span>
                             </div>
-                            <p className={`text-4xl font-bold ${status.textColor}`}>
+                            <p className={`text-2xl sm:text-4xl font-bold ${status.textColor}`}>
                                 {taskCounts[status.label as keyof StatusCount]}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">件</p>

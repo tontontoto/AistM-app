@@ -1,0 +1,29 @@
+# netlify.toml (プロジェクトルートに配置)
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+# Next.jsプラグインの使用
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# 環境変数（ここでは設定例として記載、実際はNetlifyダッシュボードで設定）
+[build.environment]
+  NODE_VERSION = "18"
+
+# リダイレクト設定（必要に応じて）
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-backend.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+# ヘッダー設定
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
