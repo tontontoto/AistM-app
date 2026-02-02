@@ -142,7 +142,7 @@ function SetPasswordContent() {
                                     required
                                     placeholder="メールアドレス"
                                     className="border-2 border-gray-300 rounded-lg p-2 w-full"
-                                    disabled
+                                    
                                 />
 
                                 <Input
