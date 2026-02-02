@@ -2,8 +2,8 @@
 
 [build]
   base = "aistm-frontend"
-  command = "npm run build"
-  publish = ".next"
+  command = "npm --prefix aistm-frontend run build"
+  publish = "aistm-frontend/build"
 
 # Next.jsプラグインの使用
 [[plugins]]
