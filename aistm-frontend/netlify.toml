@@ -1,7 +1,7 @@
 # netlify.toml (プロジェクトルートに配置)
 
 [build]
-  base = "frontend"
+  base = "aistm-frontend"
   command = "npm run build"
   publish = ".next"
 
