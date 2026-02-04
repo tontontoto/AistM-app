@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Railway向けの設定
-  output: 'standalone', // SSRを使用する場合（Docker対応）
+  output: 'standalone', // Dockerデプロイに必須
   
   images: {
-    unoptimized: false, // standaloneモードでは画像最適化を有効化
+    unoptimized: false, // 画像最適化を有効化
   },
 
   // 環境変数
@@ -13,10 +13,7 @@ const nextConfig = {
   },
 
   // トレーリングスラッシュ
-  trailingSlash: true,
-
-  // ベースパス（サブディレクトリにデプロイする場合）
-  // basePath: '/my-app',
+  trailingSlash: false,
 }
 
 module.exports = nextConfig
