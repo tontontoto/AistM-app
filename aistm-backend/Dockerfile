@@ -1,6 +1,6 @@
-FROM php:8.4-fpm
+FROM php:8.2-fpm
 
-# 必要なシステムパッケージとPHP拡張機能をインストール
+# 必要なパッケージのインストール
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# GD（画像処理）などのPHP拡張機能をインストール
+# PHP拡張機能のインストール
 RUN docker-php-ext-install pdo_mysql exif pcntl gd
 
 # Composerのインストール
@@ -18,12 +18,22 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 作業ディレクトリの設定
 WORKDIR /var/www/html
 
-# 既存のLaravelプロジェクトをコピー
-# ★プロジェクトが空の場合、後でdocker-composeのvolumesでマウントされます
+# アプリケーションファイルのコピー
 COPY . /var/www/html/
 
-# 権限の設定（開発環境向け）
-RUN chown -R www-data:www-data /var/www/html
+# 依存関係のインストール
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# PHP-FPMのデフォルトポート9000を公開
-EXPOSE 9000
+# パーミッション設定
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# ポート公開
+EXPOSE 8000
+
+# 起動コマンド（start.shではなく直接指定）
+CMD php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan migrate --force && \
+    php artisan serve --host=0.0.0.0 --port=8000
