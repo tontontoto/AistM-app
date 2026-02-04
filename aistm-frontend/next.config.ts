@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Netlify向けの設定
-  output: 'export', // 静的エクスポート（SSRなしの場合）
-  // または
-  // output: 'standalone', // SSRを使用する場合
+  // Railway向けの設定
+  output: 'standalone', // SSRを使用する場合（Docker対応）
   
   images: {
-    unoptimized: true, // 静的エクスポートの場合は必須
+    unoptimized: false, // standaloneモードでは画像最適化を有効化
   },
 
   // 環境変数
