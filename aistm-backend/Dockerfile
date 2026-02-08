@@ -37,6 +37,5 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 8000
 
-CMD php artisan optimize && \
-    php artisan migrate --force && \
-    php artisan serve --host=0.0.0.0 --port=8000
+# PHPビルトインサーバーを直接起動
+CMD php -S 0.0.0.0:8000 -t public
