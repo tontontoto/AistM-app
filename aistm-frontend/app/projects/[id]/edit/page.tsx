@@ -14,7 +14,7 @@ import Link from "next/link";
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
     priorities: Array<{ id: number; name: string }>;
-    users: Array<{ id: number; name: string; email: string }>;
+    users: Array<{ id: number; name: string; email: string; username?: string }>;
 }
 
 export default function EditProjectPage() {
@@ -26,7 +26,6 @@ export default function EditProjectPage() {
         status_id: "",
         priority_id: "",
         detail: "",
-        user_id: "",
         schedule: "",
         related_url: "",
     });
@@ -39,6 +38,8 @@ export default function EditProjectPage() {
     const [loading, setLoading] = useState(false);
     const [masterDataLoading, setMasterDataLoading] = useState(true);
     const [projectLoading, setProjectLoading] = useState(true);
+    const [selectedUsers, setSelectedUsers] = useState<MasterData["users"]>([]);
+    const [userSearch, setUserSearch] = useState("");
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -87,10 +88,14 @@ export default function EditProjectPage() {
                         status_id: data.status?.id?.toString() || "",
                         priority_id: data.priority?.id?.toString() || "",
                         detail: data.detail || "",
-                        user_id: data.user?.id?.toString() || "",
                         schedule: formattedSchedule,
                         related_url: data.related_url || "",
                     });
+                    if (Array.isArray(data.users) && data.users.length > 0) {
+                        setSelectedUsers(data.users);
+                    } else if (data.user) {
+                        setSelectedUsers([data.user]);
+                    }
                 }
             } catch (err) {
                 console.error("プロジェクト取得エラー:", err);
@@ -153,13 +158,22 @@ export default function EditProjectPage() {
         setLoading(true);
         setError("");
 
+        if (selectedUsers.length === 0) {
+            setError("担当者を1人以上追加してください");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`${apiBase}/projects/${projectId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    ...formData,
+                    user_ids: selectedUsers.map(user => user.id),
+                }),
             });
 
             const contentType = response.headers.get("content-type");
@@ -246,15 +260,69 @@ export default function EditProjectPage() {
                         value={formData.detail}
                         onChange={handleChange}
                     />
-                    <Select
-                        select_title="担当者"
-                        select_name="user_id"
-                        select_id="user_id"
-                        options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${u.email})` }))}
-                        value={formData.user_id}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div>
+                        <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-2">
+                            担当者
+                            <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="userSearch"
+                            value={userSearch}
+                            onChange={(e) => setUserSearch(e.target.value)}
+                            placeholder="名前やメールで検索して追加"
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        />
+                        {userSearch.trim() && (
+                            <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-40 overflow-y-auto">
+                                {masterData.users
+                                    .filter(user => {
+                                        const query = userSearch.toLowerCase();
+                                        const name = (user.name || "").toLowerCase();
+                                        const email = (user.email || "").toLowerCase();
+                                        const username = (user.username || "").toLowerCase();
+                                        return (
+                                            (name.includes(query) || email.includes(query) || username.includes(query))
+                                            && !selectedUsers.some(selected => selected.id === user.id)
+                                        );
+                                    })
+                                    .map(user => (
+                                        <button
+                                            type="button"
+                                            key={user.id}
+                                            onClick={() => {
+                                                setSelectedUsers(prev => [...prev, user]);
+                                                setUserSearch("");
+                                            }}
+                                            className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
+                                        >
+                                            {user.name || user.username || "名前なし"} ({user.email})
+                                        </button>
+                                    ))}
+                            </div>
+                        )}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {selectedUsers.map(user => (
+                                <span
+                                    key={user.id}
+                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                                >
+                                    {user.name || user.username || "名前なし"}
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedUsers(prev => prev.filter(selected => selected.id !== user.id))}
+                                        className="text-blue-500 hover:text-blue-700"
+                                        aria-label="担当者を削除"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                            {selectedUsers.length === 0 && (
+                                <span className="text-sm text-gray-400">担当者が未選択です</span>
+                            )}
+                        </div>
+                    </div>
                     <Date 
                         id="schedule"
                         value={formData.schedule}

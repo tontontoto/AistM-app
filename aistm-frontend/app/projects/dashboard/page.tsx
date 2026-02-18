@@ -133,10 +133,10 @@ export default function DashboardPage() {
     }, [tasks]);
 
     const statusCards = [
-        { label: "企画中", color: "bg-purple-500", lightColor: "bg-purple-100", textColor: "text-purple-800" },
-        { label: "進行中", color: "bg-blue-500", lightColor: "bg-blue-100", textColor: "text-blue-800" },
-        { label: "完了", color: "bg-green-500", lightColor: "bg-green-100", textColor: "text-green-800" },
-        { label: "保留中", color: "bg-gray-500", lightColor: "bg-gray-100", textColor: "text-gray-800" },
+        { label: "企画中", color: "bg-purple-500", lightColor: "bg-purple-100 dark:bg-purple-900/30", textColor: "text-purple-800 dark:text-purple-100" },
+        { label: "進行中", color: "bg-blue-500", lightColor: "bg-blue-100 dark:bg-blue-900/30", textColor: "text-blue-800 dark:text-blue-100" },
+        { label: "完了", color: "bg-green-500", lightColor: "bg-green-100 dark:bg-green-900/30", textColor: "text-green-800 dark:text-green-100" },
+        { label: "保留中", color: "bg-gray-500", lightColor: "bg-gray-100 dark:bg-gray-800", textColor: "text-gray-800 dark:text-gray-100" },
     ];
 
     if (loading) {

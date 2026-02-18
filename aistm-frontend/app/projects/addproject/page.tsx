@@ -12,7 +12,15 @@ import Link from "next/link";
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
     priorities: Array<{ id: number; name: string }>;
-    users: Array<{ id: number; name: string; email: string }>;
+    users: Array<{ id: number; name: string; email: string; username?: string }>;
+}
+
+function getCookie(name: string): string | null {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+    return null;
 }
 
 export default function AddProjectPage() {
@@ -22,7 +30,6 @@ export default function AddProjectPage() {
         status_id: "",
         priority_id: "",
         detail: "",
-        user_id: "",
         schedule: "",
         related_url: "",
     });
@@ -34,10 +41,21 @@ export default function AddProjectPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [masterDataLoading, setMasterDataLoading] = useState(true);
+    const [selectedUsers, setSelectedUsers] = useState<MasterData["users"]>([]);
+    const [userSearch, setUserSearch] = useState("");
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
         return base.replace(/\/+$/, "");
+    }, []);
+
+    useEffect(() => {
+        const cookieUserId = getCookie("user_id");
+        if (cookieUserId) {
+            const parsedId = Number(cookieUserId);
+            setCurrentUserId(Number.isNaN(parsedId) ? null : parsedId);
+        }
     }, []);
 
     // マスターデータを取得
@@ -84,6 +102,14 @@ export default function AddProjectPage() {
         fetchMasterData();
     }, [apiBase]);
 
+    useEffect(() => {
+        if (!currentUserId || masterData.users.length === 0) return;
+        const currentUser = masterData.users.find(user => user.id === currentUserId);
+        if (currentUser && !selectedUsers.some(user => user.id === currentUser.id)) {
+            setSelectedUsers(prev => [...prev, currentUser]);
+        }
+    }, [currentUserId, masterData.users, selectedUsers]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { id, name, value } = e.target;
         const fieldName = id || name;
@@ -98,13 +124,29 @@ export default function AddProjectPage() {
         setLoading(true);
         setError("");
 
+        if (selectedUsers.length === 0) {
+            setError("担当者を1人以上追加してください");
+            setLoading(false);
+            return;
+        }
+
+        if (!currentUserId) {
+            setError("ログインが必要です");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`${apiBase}/projects`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    ...formData,
+                    user_ids: selectedUsers.map(user => user.id),
+                    created_by: currentUserId,
+                }),
             });
 
             const contentType = response.headers.get("content-type");
@@ -130,11 +172,11 @@ export default function AddProjectPage() {
     };
 
     return (
-        <div className="w-full min-h-screen from-gray-50 via-white to-gray-50">
+        <div className="w-full">
             <div className="max-w-4xl mx-auto">
                 {/* エラーメッセージ */}
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
+                    <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
                         <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -143,8 +185,8 @@ export default function AddProjectPage() {
                 )}
 
                 {masterDataLoading ? (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
-                        <div className="flex items-center justify-center py-12">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6">
+                        <div className="flex items-center justify-center py-10">
                             <div className="flex flex-col items-center gap-3">
                                 <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -155,20 +197,15 @@ export default function AddProjectPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl  md:p-10">
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 sm:p-6">
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             {/* 基本情報セクション */}
-                            <div className="border-b border-gray-100 pb-6">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    基本情報
-                                </h2>
-                                <div className="space-y-6">
-                                    {/* プロジェクト名 - 大きめに表示 */}
+                            <div className="border-b border-gray-100 pb-4">
+                                <h2 className="text-base font-semibold text-gray-800 mb-3">基本情報</h2>
+                                <div className="space-y-4">
+                                    {/* プロジェクト名 */}
                                     <div className="w-full">
-                                        <label htmlFor="overview" className="block text-lg font-semibold text-gray-800 mb-3">
+                                        <label htmlFor="overview" className="block text-sm font-semibold text-gray-800 mb-2">
                                             プロジェクト名
                                             <span className="text-red-500 ml-1">*</span>
                                         </label>
@@ -180,10 +217,10 @@ export default function AddProjectPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="プロジェクト名を入力してください"
-                                            className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
+                                            className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <Select
                                             select_title="プロジェクトステータス"
                                             select_name="status_id"
@@ -203,15 +240,69 @@ export default function AddProjectPage() {
                                         required
                                         isPriority={true}
                                     />
-                                        <Select
-                                            select_title="担当者"
-                                            select_name="user_id"
-                                            select_id="user_id"
-                                            options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${u.email})` }))}
-                                            value={formData.user_id}
-                                            onChange={handleChange}
-                                            required
+                                    <div>
+                                        <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-2">
+                                            担当者
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="userSearch"
+                                            value={userSearch}
+                                            onChange={(e) => setUserSearch(e.target.value)}
+                                            placeholder="名前やメールで検索して追加"
+                                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                                         />
+                                        {userSearch.trim() && (
+                                            <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-32 overflow-y-auto">
+                                                {masterData.users
+                                                    .filter(user => {
+                                                        const query = userSearch.toLowerCase();
+                                                        const name = (user.name || "").toLowerCase();
+                                                        const email = (user.email || "").toLowerCase();
+                                                        const username = (user.username || "").toLowerCase();
+                                                        return (
+                                                            (name.includes(query) || email.includes(query) || username.includes(query))
+                                                            && !selectedUsers.some(selected => selected.id === user.id)
+                                                        );
+                                                    })
+                                                    .map(user => (
+                                                        <button
+                                                            type="button"
+                                                            key={user.id}
+                                                            onClick={() => {
+                                                                setSelectedUsers(prev => [...prev, user]);
+                                                                setUserSearch("");
+                                                            }}
+                                                            className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
+                                                        >
+                                                            {user.name || user.username || "名前なし"} ({user.email})
+                                                        </button>
+                                                    ))}
+                                            </div>
+                                        )}
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {selectedUsers.map(user => (
+                                                <span
+                                                    key={user.id}
+                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs"
+                                                >
+                                                    {user.name || user.username || "名前なし"}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedUsers(prev => prev.filter(selected => selected.id !== user.id))}
+                                                        className="text-blue-500 hover:text-blue-700"
+                                                        aria-label="担当者を削除"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ))}
+                                            {selectedUsers.length === 0 && (
+                                                <span className="text-sm text-gray-400">担当者が未選択です</span>
+                                            )}
+                                        </div>
+                                    </div>
                                         <Date 
                                             id="schedule"
                                             value={formData.schedule}
@@ -222,14 +313,9 @@ export default function AddProjectPage() {
                             </div>
 
                             {/* 詳細情報セクション */}
-                            <div className="border-b border-gray-100 pb-6">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    詳細情報
-                                </h2>
-                                <div className="space-y-6">
+                            <div className="border-b border-gray-100 pb-4">
+                                <h2 className="text-base font-semibold text-gray-800 mb-3">詳細情報</h2>
+                                <div className="space-y-4">
                                     <Textarea 
                                         textarea_title="プロジェクトの説明"
                                         id="detail"
@@ -248,10 +334,10 @@ export default function AddProjectPage() {
                             </div>
 
                             {/* 送信ボタン */}
-                            <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
+                            <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
                                 <Link
                                     href="/projects"
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                    className="w-full sm:w-auto text-center px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                                 >
                                     キャンセル
                                 </Link>
@@ -261,6 +347,7 @@ export default function AddProjectPage() {
                                     disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0}
                                 />
                             </div>
+                            <p className="text-gray-500 text-xs text-right">(作成するあなたが、このプロジェクトのリーダーになります。)</p>
                         </form>
                     </div>
                 )}

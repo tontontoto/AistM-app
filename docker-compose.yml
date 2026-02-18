@@ -33,7 +33,7 @@ services:
   frontend:
     build:
       context: ./aistm-frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: aistm-frontend
     ports:
       - "3000:3000"
