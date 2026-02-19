@@ -25,6 +25,7 @@ export default function AddTaskPage() {
         priority_id: "",
         detail: "",
         user_id: "",
+        start_date: "",
         schedule: "",
         related_url: "",
     });
@@ -246,6 +247,13 @@ export default function AddTaskPage() {
                                             required
                                         />
                                         <Date 
+                                            label="開始日"
+                                            id="start_date"
+                                            value={formData.start_date}
+                                            onChange={handleChange}
+                                        />
+                                        <Date 
+                                            label="期限"
                                             id="schedule"
                                             value={formData.schedule}
                                             onChange={handleChange}

@@ -3,10 +3,12 @@ services:
   backend:
     build:
       context: ./aistm-backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: aistm-backend_fpm
     volumes:
       - ./aistm-backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+      - backend_storage:/var/www/html/storage
     environment:
       DB_CONNECTION: mysql
       DB_HOST: db
@@ -42,6 +44,9 @@ services:
       - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080/api/
+      # Docker上でファイル変更が検知されず反映されない場合の対策（watchのポーリング）
+      WATCHPACK_POLLING: "true"
+      WATCHPACK_POLLING_INTERVAL: "1000"
 
   # --- 4. データベースサービス (MySQL) ---
   db:
@@ -77,3 +82,5 @@ services:
     
 volumes:
   db_data:
+  backend_vendor:
+  backend_storage:

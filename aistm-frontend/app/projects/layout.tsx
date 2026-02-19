@@ -15,7 +15,7 @@ export default function ProjectsLayout({
         { label: "プロジェクト一覧", href: "/projects" },
         { label: "タスク一覧", href: "/projects/tasks" },
         { label: "ガントチャート", href: "/projects/gantt" },
-        { label: "タスク新規作成", href: "/projects/addtasks" },
+        // { label: "タスク新規作成", href: "/projects/addtasks" },
         { label: "ダッシュボード", href: "/projects/dashboard" },
         { label: "PMダッシュボード", href: "/projects/pm-dashboard" },
         { label: "ユーザー管理", href: "/projects/usermanagement" },
@@ -28,7 +28,7 @@ export default function ProjectsLayout({
             {/* ハンバーガーメニュー（モバイル用） */}
             <HamburgerMenu links={navLinks} />
 
-            <main className="w-full max-w-[1100px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-4">
+            <main className="w-full max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-4">
                     {/* デスクトップ用サイドナビゲーション */}
                     <div className="hidden lg:block lg:w-64 shrink-0 px-4 py-3 border-r-2 border-gray-300 dark:border-gray-700">
                         <nav>

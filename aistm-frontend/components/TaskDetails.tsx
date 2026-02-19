@@ -25,6 +25,7 @@ type Task = {
         name: string;
     };
     schedule: string | null;
+    start_date?: string | null;
     detail: string | null;
     related_url: string | null;
     is_completed: number;
@@ -320,7 +321,7 @@ export default function TaskDetails({ selectedId }: Props) {
                 )}
             </div>
             {confirmHelp.open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-5">
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">送信しますか？</h3>
                         <p className="text-sm text-gray-600 mb-4">
@@ -431,6 +432,20 @@ export default function TaskDetails({ selectedId }: Props) {
                         <p className="text-xs text-gray-500 mb-1">期限</p>
                         <p className="font-semibold text-gray-800">
                             {new Date(task.schedule).toLocaleDateString('ja-JP', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+                    </div>
+                )}
+
+                {/* 開始日 */}
+                {task.start_date && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">開始日</p>
+                        <p className="font-semibold text-gray-800">
+                            {new Date(task.start_date).toLocaleDateString('ja-JP', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'

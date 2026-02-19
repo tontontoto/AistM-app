@@ -37,7 +37,6 @@ const VIEWPORT_ROWS = 10; // 要件: タスク数10まではスクロール無�
 const ROW_PX = 28; // 1行あたりの高さの目安
 const AXIS_PADDING_PX = 80; // 軸/余白の目安
 const LABEL_AREA_PX = 320; // y軸ラベルぶんの横余白（概算）
-const MIN_VISIBLE_DAYS = 200; // チャート全体の幅を確保（右端は最遠期日を維持）
 const MIN_TICK_LABEL_PX = 36; // 日付ラベル同士の最低間隔（狭すぎる問題の対策）
 
 function formatIsoSecondFromMs(ms: number): string {
@@ -54,7 +53,15 @@ function formatShortDateFromMs(ms: number): string {
     return `${mm}/${dd}`;
 }
 
-export default function GanttChartClient({ rows }: { rows: GanttRow[] }) {
+export default function GanttChartClient({
+    rows,
+    minStartMs,
+    maxEndMs,
+}: {
+    rows: GanttRow[];
+    minStartMs?: number;
+    maxEndMs?: number;
+}) {
     const totalRows = rows.length;
     const hasVerticalScroll = totalRows > VIEWPORT_ROWS;
     // 表示領域（スクロールなし時も「10分割（10行分）」の縦サイズを確保）
@@ -77,21 +84,19 @@ export default function GanttChartClient({ rows }: { rows: GanttRow[] }) {
         const minFromData = Math.min(...rows.map((r) => r.startMs));
         const maxFromData = Math.max(...rows.map((r) => r.endMs));
 
-        let min = Math.floor(minFromData / DAY_MS) * DAY_MS;
+        const effectiveMinFromData =
+            typeof minStartMs === "number" ? Math.min(minFromData, minStartMs) : minFromData;
+        const effectiveMaxFromData =
+            typeof maxEndMs === "number" ? Math.max(maxFromData, maxEndMs) : maxFromData;
+        const min = Math.floor(effectiveMinFromData / DAY_MS) * DAY_MS;
         // 要件: 右端は一番終わりが遠い日付まで（未来バッファ無し）
-        const max = Math.ceil(maxFromData / DAY_MS) * DAY_MS;
-
-        // 幅が小さすぎる場合は左側（過去）を拡張して全体幅を確保する
-        const daysFromData = Math.max(1, Math.round((max - min) / DAY_MS) + 1);
-        if (daysFromData < MIN_VISIBLE_DAYS) {
-            min = max - (MIN_VISIBLE_DAYS - 1) * DAY_MS;
-        }
+        const max = Math.ceil(effectiveMaxFromData / DAY_MS) * DAY_MS;
 
         const days = Math.max(1, Math.round((max - min) / DAY_MS) + 1);
         const widthPx = LABEL_AREA_PX + days * PIXELS_PER_DAY;
 
         return { min, max, days, widthPx };
-    }, [rows]);
+    }, [rows, minStartMs]);
 
     const chartData = useMemo(() => {
         return {

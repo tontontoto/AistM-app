@@ -1,11 +1,13 @@
 import React from 'react'
 
 export default function Date({
+    label = "期限",
     id,
     value,
     onChange,
     required,
 }: {
+    label?: string;
     id?: string;
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -14,7 +16,7 @@ export default function Date({
   return (
     <div className="w-full">
         <label htmlFor={id || "date"} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-            期限
+            {label}
             {required && <span className="text-red-500 ml-1">*</span>}
         </label>
         <input 

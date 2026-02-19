@@ -7,6 +7,7 @@ type ApiTask = {
     id: number;
     overview: string;
     created_at: string;
+    start_date?: string | null;
     schedule: string | null; // YYYY-MM-DD
     is_completed?: boolean;
     project?: { id: number; overview?: string } | null;
@@ -54,6 +55,12 @@ function parseStartOfDayUtcFromIso(isoDatetime: string): number {
     return Number.isFinite(ms) ? ms : Date.now();
 }
 
+function parseStartOfDayUtcFromYmd(value: string): number {
+    const ymd = normalizeYmd(value);
+    const ms = Date.parse(`${ymd}T00:00:00Z`);
+    return Number.isFinite(ms) ? ms : Date.now();
+}
+
 export default function GanttPage() {
     const [tasks, setTasks] = useState<ApiTask[]>([]);
     const [loading, setLoading] = useState(true);
@@ -95,6 +102,31 @@ export default function GanttPage() {
         fetchTasks();
     }, [apiBase]);
 
+    const domainPadding = useMemo(() => {
+        // 未完了タスク全体の範囲を基準に、左右10日分の余白を作る
+        const incomplete = tasks
+            .filter((task) => task.schedule)
+            .filter((task) => !task.is_completed);
+
+        if (incomplete.length === 0) return { minStartMs: undefined, maxEndMs: undefined };
+
+        const starts = incomplete.map((task) => {
+            if (task.start_date) return parseStartOfDayUtcFromYmd(task.start_date);
+            return parseStartOfDayUtcFromIso(task.created_at);
+        });
+
+        const ends = incomplete.map((task) => parseEndOfDayUtc(task.schedule as string));
+
+        const minStart = Math.min(...starts);
+        const maxEnd = Math.max(...ends);
+        const tenDays = 10 * 24 * 60 * 60 * 1000;
+
+        return {
+            minStartMs: Number.isFinite(minStart) ? minStart - tenDays : undefined,
+            maxEndMs: Number.isFinite(maxEnd) ? maxEnd + tenDays : undefined,
+        };
+    }, [tasks]);
+
     const rows = useMemo<GanttRow[]>(() => {
         const myUserId = Number(getCookie("user_id") || "0");
         const key = keyword.trim().toLowerCase();
@@ -115,7 +147,7 @@ export default function GanttPage() {
                 return haystack.includes(key);
             })
             .map((task) => {
-                const startMs = parseStartOfDayUtcFromIso(task.created_at);
+                const startMs = task.start_date ? parseStartOfDayUtcFromYmd(task.start_date) : parseStartOfDayUtcFromIso(task.created_at);
                 const endMs = task.schedule ? parseEndOfDayUtc(task.schedule) : startMs;
                 const safeStart = Number.isFinite(startMs) ? startMs : Date.now();
                 const safeEnd = Number.isFinite(endMs) ? endMs : safeStart;
@@ -220,7 +252,11 @@ export default function GanttPage() {
                     <p className="text-gray-400 text-sm mt-2">期限（schedule）が設定されたタスクが対象です</p>
                 </div>
             ) : (
-                <GanttChartClient rows={rows} />
+                <GanttChartClient
+                    rows={rows}
+                    minStartMs={domainPadding.minStartMs}
+                    maxEndMs={domainPadding.maxEndMs}
+                />
             )}
         </div>
     );

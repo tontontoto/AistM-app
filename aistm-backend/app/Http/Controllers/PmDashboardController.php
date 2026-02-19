@@ -90,7 +90,7 @@ class PmDashboardController extends Controller
                     continue;
                 }
 
-                $createdAt = Carbon::parse($task->created_at);
+                $createdAt = Carbon::parse($task->start_date ?? $task->created_at);
                 $schedule = Carbon::parse($task->schedule);
 
                 if ($schedule->lessThanOrEqualTo($createdAt)) {

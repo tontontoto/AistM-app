@@ -29,6 +29,7 @@ export default function EditTaskPage() {
         priority_id: "",
         detail: "",
         user_id: "",
+        start_date: "",
         schedule: "",
         related_url: "",
     });
@@ -81,6 +82,7 @@ export default function EditTaskPage() {
                         priority_id: data.priority?.id?.toString() || "",
                         detail: data.detail || "",
                         user_id: data.user?.id?.toString() || "",
+                        start_date: data.start_date || "",
                         schedule: data.schedule || "",
                         related_url: data.related_url || "",
                     });
@@ -282,6 +284,13 @@ export default function EditTaskPage() {
                         required
                     />
                     <Date 
+                        label="開始日"
+                        id="start_date"
+                        value={formData.start_date}
+                        onChange={handleChange}
+                    />
+                    <Date 
+                        label="期限"
                         id="schedule"
                         value={formData.schedule}
                         onChange={handleChange}
