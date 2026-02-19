@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import TaskDetails from "@/components/TaskDetails";
+import Button from "@/app/(components)/button";
 
 type Task = {
     id: number;
@@ -128,9 +129,16 @@ export default function TasksLayout({
                     ) : (
                         // タスクが選択されていない場合はリストを表示
                         <div className="w-full">
-                            <div className="mb-6">
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">タスク一覧</h1>
-                                <p className="text-gray-600">タスクを管理・確認できます</p>
+                            <div className="mb-6 flex justify-between items-center">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-800 mb-2">タスク一覧</h1>
+                                    <p className="text-gray-600">タスクを管理・確認できます</p>
+                                </div>
+                                <div className="flex justify-end">
+                                    <Link href="/projects/addtasks" className="text-blue-600 hover:text-blue-800">
+                                        <Button button_type="button" button_title="タスク新規作成" color="blue" />
+                                    </Link>
+                                </div>
                             </div>
 
                             {/* ソート機能 */}

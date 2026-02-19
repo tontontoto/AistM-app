@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->tinyInteger('is_completed')->default(0)->after('related_url');
-        });
+        if (!Schema::hasColumn('tasks', 'is_completed')) {
+            Schema::table('tasks', function (Blueprint $table) {
+                $table->tinyInteger('is_completed')->default(0)->after('related_url');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('is_completed');
-        });
+        if (Schema::hasColumn('tasks', 'is_completed')) {
+            Schema::table('tasks', function (Blueprint $table) {
+                $table->dropColumn('is_completed');
+            });
+        }
     }
 };

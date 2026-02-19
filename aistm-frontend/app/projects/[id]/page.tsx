@@ -6,14 +6,27 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
+function getCookie(name: string): string | null {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+    return null;
+}
+
 type Project = {
     id: number;
     overview: string;
-    user: {
+    user?: {
         id: number;
         name: string;
         email: string;
     };
+    users?: Array<{
+        id: number;
+        name: string;
+        email: string;
+    }>;
     status: {
         id: number;
         name: string;
@@ -21,6 +34,11 @@ type Project = {
     priority: {
         id: number;
         name: string;
+    };
+    creator?: {
+        id: number;
+        name?: string;
+        email?: string;
     };
     schedule: string | null;
     detail: string | null;
@@ -38,6 +56,8 @@ export default function ProjectDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const currentUserId = Number(getCookie("user_id"));
+    const isCreator = project?.creator?.id === currentUserId;
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -86,13 +106,21 @@ export default function ProjectDetailPage() {
     const handleDelete = async () => {
         if (!project || !projectId) return;
 
+        const userId = getCookie("user_id");
+        if (!userId) {
+            setError("ログインが必要です");
+            return;
+        }
+
         setDeleting(true);
         try {
             const response = await fetch(`${apiBase}/projects/${projectId}`, {
                 method: "DELETE",
                 headers: {
                     Accept: "application/json",
+                    "Content-Type": "application/json",
                 },
+                body: JSON.stringify({ user_id: Number(userId) }),
             });
 
             if (!response.ok) {
@@ -201,12 +229,25 @@ export default function ProjectDetailPage() {
                     {/* 担当者 */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-xs text-gray-500 mb-1">担当者</p>
-                        <div className="flex flex-col">
-                            <span className="font-semibold text-gray-800">{project.user?.name || "未設定"}</span>
-                            {project.user?.email && (
-                                <span className="text-sm text-gray-500">{project.user.email}</span>
-                            )}
-                        </div>
+                        {project.users && project.users.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {project.users.map(user => (
+                                    <span key={user.id} className="inline-flex flex-col bg-white border border-gray-200 rounded-lg px-3 py-2">
+                                        <span className="font-semibold text-gray-800 text-sm">{user.name || "名前なし"}</span>
+                                        {user.email && (
+                                            <span className="text-xs text-gray-500">{user.email}</span>
+                                        )}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col">
+                                <span className="font-semibold text-gray-800">{project.user?.name || "未設定"}</span>
+                                {project.user?.email && (
+                                    <span className="text-sm text-gray-500">{project.user.email}</span>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* 期限 */}
@@ -261,34 +302,37 @@ export default function ProjectDetailPage() {
                         </div>
                         
                         {/* 削除ボタン - 左下 */}
-                        <div className="flex items-center gap-2 mt-2">
-                            {showDeleteConfirm ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-600">削除しますか？</span>
+                        {isCreator && (
+                            <div className="flex items-center gap-2 mt-2">
+                                {showDeleteConfirm ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">削除しますか？</span>
+                                        <span className="text-xs text-gray-500">関連通知も削除されます</span>
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={deleting}
+                                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {deleting ? "削除中..." : "削除"}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            disabled={deleting}
+                                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm font-medium disabled:opacity-50"
+                                        >
+                                            キャンセル
+                                        </button>
+                                    </div>
+                                ) : (
                                     <button
-                                        onClick={handleDelete}
-                                        disabled={deleting}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
                                     >
-                                        {deleting ? "削除中..." : "削除"}
+                                        削除
                                     </button>
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(false)}
-                                        disabled={deleting}
-                                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm font-medium disabled:opacity-50"
-                                    >
-                                        キャンセル
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setShowDeleteConfirm(true)}
-                                    className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                                >
-                                    削除
-                                </button>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

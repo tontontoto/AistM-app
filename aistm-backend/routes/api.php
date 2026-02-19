@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PmDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/signup', RegisterController::class);
@@ -20,12 +22,24 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::get('/users/{id}/projects', [UserController::class, 'getProjects']);
 Route::get('/users/{id}/tasks', [UserController::class, 'getTasks']);
+Route::get('/users/{id}/notifications', [NotificationController::class, 'index']);
+Route::put('/users/{id}/skills', [UserController::class, 'updateSkills']);
 
 // プロジェクト関連のルート
 Route::apiResource('projects', ProjectController::class);
+Route::put('/projects/{id}/skills', [ProjectController::class, 'updateSkills']);
 
 // タスク関連のルート
 Route::apiResource('tasks', TaskController::class);
+Route::post('/tasks/{id}/help', [NotificationController::class, 'storeTaskHelp']);
+
+// 通知関連のルート
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+
+// PM向けダッシュボード
+Route::get('/pm-dashboard', [PmDashboardController::class, 'index']);
+Route::get('/pm-dashboard/sos', [PmDashboardController::class, 'sosIndex']);
+Route::put('/pm-dashboard/sos/{id}/resolve', [PmDashboardController::class, 'resolveSos']);
 
 // マスターデータ関連のルート
 Route::get('/master/statuses', [MasterDataController::class, 'getStatuses']);

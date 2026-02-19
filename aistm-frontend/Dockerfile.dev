@@ -1,0 +1,13 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+EXPOSE 3000
+
+# 開発用: ソースはvolumeマウントされる前提。
+# 起動時に package-lock.json に合わせて依存をインストールしてから next dev を起動する。
+CMD ["sh", "-c", "npm ci && npm run dev -- --hostname 0.0.0.0 --port 3000"]
+

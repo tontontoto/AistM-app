@@ -29,6 +29,7 @@ class TaskController extends Controller
             'priority_id' => 'required|exists:priorities,id',
             'detail' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
+            'start_date' => 'nullable|date',
             'schedule' => 'nullable|date',
             'related_url' => 'nullable|url|max:255',
         ]);
@@ -71,6 +72,7 @@ class TaskController extends Controller
             'priority_id' => 'sometimes|required|exists:priorities,id',
             'detail' => 'nullable|string',
             'user_id' => 'sometimes|required|exists:users,id',
+            'start_date' => 'nullable|date',
             'schedule' => 'nullable|date',
             'related_url' => 'nullable|url|max:255',
             'is_completed' => 'sometimes|boolean',

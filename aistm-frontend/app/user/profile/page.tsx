@@ -13,6 +13,7 @@ type User = {
     email: string;
     login_count: number;
     avatar_color?: string;
+    skills?: Array<{ id: number; name: string }>;
 };
 
 type Project = {
@@ -53,6 +54,9 @@ export default function ProfilePage() {
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [selectedColor, setSelectedColor] = useState("#3B82F6");
     const [updatingColor, setUpdatingColor] = useState(false);
+    const [skills, setSkills] = useState<string[]>([]);
+    const [skillInput, setSkillInput] = useState("");
+    const [savingSkills, setSavingSkills] = useState(false);
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -84,6 +88,7 @@ export default function ProfilePage() {
                         if (userData) {
                             setUser(userData);
                                             setSelectedColor(userData.avatar_color || "#3B82F6");
+                            setSkills(Array.isArray(userData.skills) ? userData.skills.map((skill: { name: string }) => skill.name) : []);
                         }
                     }
                 } else if (userResponse.status === 404) {
@@ -158,6 +163,44 @@ export default function ProfilePage() {
         "#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6",
         "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1",
     ];
+
+    const handleAddSkill = () => {
+        const trimmed = skillInput.trim();
+        if (!trimmed) return;
+        if (skills.includes(trimmed)) {
+            setSkillInput("");
+            return;
+        }
+        setSkills(prev => [...prev, trimmed]);
+        setSkillInput("");
+    };
+
+    const handleRemoveSkill = (name: string) => {
+        setSkills(prev => prev.filter(skill => skill !== name));
+    };
+
+    const handleSaveSkills = async () => {
+        const userId = getCookie('user_id');
+        if (!userId) return;
+        setSavingSkills(true);
+        try {
+            const response = await fetch(`${apiBase}/users/${userId}/skills`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ skills }),
+            });
+
+            if (!response.ok) {
+                throw new Error('スキルの保存に失敗しました');
+            }
+        } catch (err) {
+            console.error('スキル保存エラー:', err);
+        } finally {
+            setSavingSkills(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -277,6 +320,61 @@ export default function ProfilePage() {
                                     className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
                                 >
                                     ログアウト
+                                </button>
+                            </div>
+                            <div className="w-full border-t border-gray-200 pt-4">
+                                <h4 className="text-sm font-semibold text-gray-700 mb-2">スキル</h4>
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="text"
+                                        value={skillInput}
+                                        onChange={(e) => setSkillInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                handleAddSkill();
+                                            }
+                                        }}
+                                        placeholder="例: React"
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleAddSkill}
+                                        className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                                    >
+                                        追加
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {skills.length === 0 ? (
+                                        <span className="text-xs text-gray-400">登録されたスキルがありません</span>
+                                    ) : (
+                                        skills.map((skill) => (
+                                            <span
+                                                key={skill}
+                                                className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs"
+                                            >
+                                                {skill}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveSkill(skill)}
+                                                    className="text-blue-500 hover:text-blue-700"
+                                                    aria-label="スキルを削除"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleSaveSkills}
+                                    disabled={savingSkills}
+                                    className="w-full px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium disabled:opacity-50"
+                                >
+                                    {savingSkills ? "保存中..." : "スキルを保存"}
                                 </button>
                             </div>
                         </div>

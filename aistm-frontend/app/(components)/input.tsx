@@ -46,7 +46,7 @@ export default function Input({
         return (
             <div className="w-full">
                 {input_title && (
-                    <label htmlFor={input_id} className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor={input_id} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         {input_title}
                         {required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -56,7 +56,10 @@ export default function Input({
                     id={input_id}
                     name={input_name || input_id}
                     pattern={input_pattern || undefined}
-                    className={className || "w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all bg-white text-gray-800 placeholder-gray-400"}
+                    className={
+                        className ||
+                        "w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+                    }
                     value={value ?? undefined}
                     onChange={onChange}
                     required={required}
@@ -69,7 +72,9 @@ export default function Input({
 
     return (
         <div className="flex flex-col my-2">
-            <label htmlFor={input_id}>{input_title}</label>
+            <label htmlFor={input_id} className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {input_title}
+            </label>
             <div className="flex flex-col gap-2">
                 {values.map((val, idx) => (
                     <div className="flex flex-row items-center" key={idx}>
@@ -78,7 +83,7 @@ export default function Input({
                             type={input_type}
                             id={`${input_id}-${idx}`}
                             pattern={input_pattern || undefined}
-                            className="border m-2"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                             value={val}
                             onChange={(e) => updateValue(idx, e.target.value)}
                             onBlur={onBlur}

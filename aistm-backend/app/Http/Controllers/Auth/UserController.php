@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\Skill;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -16,10 +17,40 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::select('id', 'username', 'name', 'email', 'login_count', 'avatar_color')
+        $user = User::with(['skills'])
+            ->select('id', 'username', 'name', 'email', 'login_count', 'avatar_color')
             ->findOrFail($id);
 
         return response()->json($user);
+    }
+
+    /**
+     * ユーザーのスキルを更新
+     */
+    public function updateSkills(Request $request, string $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'skills' => 'required|array',
+            'skills.*' => 'string|max:100',
+        ]);
+
+        $skills = collect($validated['skills'])
+            ->map(fn ($skill) => trim($skill))
+            ->filter()
+            ->unique();
+
+        $skillIds = $skills->map(function ($name) {
+            return Skill::firstOrCreate(['name' => $name])->id;
+        })->values();
+
+        $user->skills()->sync($skillIds);
+
+        return response()->json([
+            'message' => 'Skills updated',
+            'skills' => $user->skills()->get(['id', 'name']),
+        ]);
     }
 
     /**
@@ -48,7 +79,11 @@ class UserController extends Controller
     public function getProjects(string $id)
     {
         $projects = Project::with(['status', 'priority'])
-            ->where('user_id', $id)
+            ->where(function ($query) use ($id) {
+                $query->whereHas('users', function ($memberQuery) use ($id) {
+                    $memberQuery->where('users.id', $id);
+                })->orWhere('user_id', $id);
+            })
             ->get();
 
         return response()->json($projects);

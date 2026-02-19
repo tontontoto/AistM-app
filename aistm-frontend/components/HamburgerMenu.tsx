@@ -39,22 +39,22 @@ export default function HamburgerMenu({ links }: HamburgerMenuProps) {
             {/* ハンバーガーボタン */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-md bg-white shadow-md hover:bg-gray-100 transition-colors"
+                className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-md bg-white dark:bg-gray-900 shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label="メニュー"
             >
                 <div className="w-6 h-5 flex flex-col justify-between">
                     <span
-                        className={`block h-0.5 w-full bg-gray-800 transition-all duration-300 ${
+                        className={`block h-0.5 w-full bg-gray-800 dark:bg-gray-100 transition-all duration-300 ${
                             isOpen ? "rotate-45 translate-y-2" : ""
                         }`}
                     ></span>
                     <span
-                        className={`block h-0.5 w-full bg-gray-800 transition-all duration-300 ${
+                        className={`block h-0.5 w-full bg-gray-800 dark:bg-gray-100 transition-all duration-300 ${
                             isOpen ? "opacity-0" : ""
                         }`}
                     ></span>
                     <span
-                        className={`block h-0.5 w-full bg-gray-800 transition-all duration-300 ${
+                        className={`block h-0.5 w-full bg-gray-800 dark:bg-gray-100 transition-all duration-300 ${
                             isOpen ? "-rotate-45 -translate-y-2" : ""
                         }`}
                     ></span>
@@ -71,12 +71,12 @@ export default function HamburgerMenu({ links }: HamburgerMenuProps) {
 
             {/* サイドメニュー */}
             <nav
-                className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
+                className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-lg z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
                 <div className="p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-6">メニュー</h2>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">メニュー</h2>
                     <ul className="flex flex-col gap-2">
                         {links.map((link) => {
                             const isActive = pathname === link.href;
@@ -87,7 +87,7 @@ export default function HamburgerMenu({ links }: HamburgerMenuProps) {
                                         className={`block w-full text-base px-4 py-3 rounded-md transition-colors ${
                                             isActive
                                                 ? "bg-blue-500 text-white"
-                                                : "text-gray-700 hover:bg-blue-100"
+                                                : "text-gray-700 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-gray-800"
                                         }`}
                                     >
                                         {link.label}

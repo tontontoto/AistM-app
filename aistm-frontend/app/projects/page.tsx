@@ -7,11 +7,16 @@ import TaskCard from "./_components/taskCard";
 type Project = {
     id: number;
     overview: string;
-    user: {
+    user?: {
         id: number;
         name: string;
         email: string;
     };
+    users?: Array<{
+        id: number;
+        name: string;
+        email: string;
+    }>;
     status: {
         id: number;
         name: string;
@@ -125,7 +130,9 @@ export default function page() {
                             task={{
                                 id: project.id,
                                 title: project.overview,
-                                assignee: project.user?.name || "未設定",
+                                assignee: project.users && project.users.length > 0
+                                    ? project.users.map(user => user.name).filter(Boolean).join(", ")
+                                    : project.user?.name || "未設定",
                                 status: project.status?.name || "未設定",
                                 statusId: project.status?.id || 1,
                                 priority: project.priority?.name || "未設定",

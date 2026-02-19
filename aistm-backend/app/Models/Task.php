@@ -14,12 +14,14 @@ class Task extends Model
         'priority_id',
         'detail',
         'user_id',
+        'start_date',
         'schedule',
         'related_url',
         'is_completed',
     ];
 
     protected $casts = [
+        'start_date' => 'date',
         'schedule' => 'date',
     ];
 

@@ -20,19 +20,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Composer依存関係（キャッシュ最適化）
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
+# 開発用: ソースはbind mountされる前提。
+# 起動時に vendor をセットアップして php-fpm を foreground で起動する。
+CMD ["sh", "-c", "composer install --no-interaction --prefer-dist && php-fpm -F"]
 
-# アプリケーションコード
-COPY . .
-
-# オートロード最適化
-RUN composer dump-autoload --optimize --no-dev
-
-# パーミッション設定
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 storage bootstrap/cache \
-    && mkdir -p storage/framework/{sessions,views,cache} storage/logs
-
-EXPOSE 9000

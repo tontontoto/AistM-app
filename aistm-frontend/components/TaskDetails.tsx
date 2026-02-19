@@ -25,6 +25,7 @@ type Task = {
         name: string;
     };
     schedule: string | null;
+    start_date?: string | null;
     detail: string | null;
     related_url: string | null;
     is_completed: number;
@@ -36,6 +37,20 @@ type Props = {
     selectedId?: string | number | null;
 };
 
+const helpReasons = [
+    { value: "technical_unknown", label: "技術的に不明" },
+    { value: "spec_unknown", label: "仕様が不明" },
+    { value: "insufficient_time", label: "工数が足りない" },
+];
+
+function getCookie(name: string): string | null {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+    return null;
+}
+
 export default function TaskDetails({ selectedId }: Props) {
     const router = useRouter();
     const [task, setTask] = useState<Task | null>(null);
@@ -44,6 +59,13 @@ export default function TaskDetails({ selectedId }: Props) {
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [updatingCompletion, setUpdatingCompletion] = useState(false);
+    const [showHelpReasons, setShowHelpReasons] = useState(false);
+    const [sendingHelp, setSendingHelp] = useState(false);
+    const [confirmHelp, setConfirmHelp] = useState<{ open: boolean; label: string; value: string }>({
+        open: false,
+        label: "",
+        value: "",
+    });
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -157,6 +179,41 @@ export default function TaskDetails({ selectedId }: Props) {
         }
     };
 
+    const handleSendHelp = async (reason: string) => {
+        if (!task || sendingHelp) return;
+        const userId = getCookie("user_id");
+        if (!userId) {
+            setError("ログインが必要です");
+            return;
+        }
+
+        setSendingHelp(true);
+        try {
+            const response = await fetch(`${apiBase}/tasks/${task.id}/help`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sender_id: Number(userId),
+                    reason,
+                }),
+            });
+
+            if (!response.ok) {
+                setError("通知の送信に失敗しました");
+                return;
+            }
+
+            setShowHelpReasons(false);
+        } catch (err) {
+            console.error("通知送信エラー:", err);
+            setError("通知の送信に失敗しました");
+        } finally {
+            setSendingHelp(false);
+        }
+    };
+
     if (!selectedId) {
         return (
             <div className="p-10 flex flex-col gap-4 border border-gray-300 rounded-3xl bg-white shadow-sm">
@@ -221,6 +278,13 @@ export default function TaskDetails({ selectedId }: Props) {
                     </h2>
                     {/* iOS風チェックボックス */}
                     <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setShowHelpReasons(prev => !prev)}
+                            className="px-3 py-2 text-xs font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
+                        >
+                            PMに通知
+                        </button>
                         <span className={`text-sm font-medium ${task.is_completed === 1 ? 'text-green-600' : 'text-gray-600'}`}>
                             {task.is_completed === 1 ? '完了' : '未完了'}
                         </span>
@@ -237,7 +301,54 @@ export default function TaskDetails({ selectedId }: Props) {
                         </label>
                     </div>
                 </div>
+                {showHelpReasons && (
+                    <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
+                        <p className="text-xs text-gray-600 mb-2">何に困っていますか？</p>
+                        <div className="flex flex-wrap gap-2">
+                            {helpReasons.map(reason => (
+                                <button
+                                    key={reason.value}
+                                    type="button"
+                                    onClick={() => setConfirmHelp({ open: true, label: reason.label, value: reason.value })}
+                                    disabled={sendingHelp}
+                                    className="px-2 py-1 text-xs bg-white text-blue-700 rounded-full border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
+                                >
+                                    {reason.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
+            {confirmHelp.open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-5">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">送信しますか？</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            「{task.overview}」について「{confirmHelp.label}」でPMに通知します。
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setConfirmHelp({ open: false, label: "", value: "" })}
+                                className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                            >
+                                キャンセル
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    await handleSendHelp(confirmHelp.value);
+                                    setConfirmHelp({ open: false, label: "", value: "" });
+                                }}
+                                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            >
+                                送信
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 基本情報 */}
             <div className="relative">
@@ -321,6 +432,20 @@ export default function TaskDetails({ selectedId }: Props) {
                         <p className="text-xs text-gray-500 mb-1">期限</p>
                         <p className="font-semibold text-gray-800">
                             {new Date(task.schedule).toLocaleDateString('ja-JP', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+                    </div>
+                )}
+
+                {/* 開始日 */}
+                {task.start_date && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">開始日</p>
+                        <p className="font-semibold text-gray-800">
+                            {new Date(task.start_date).toLocaleDateString('ja-JP', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
