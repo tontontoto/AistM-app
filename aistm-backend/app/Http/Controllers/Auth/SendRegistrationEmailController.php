@@ -65,12 +65,20 @@ class SendRegistrationEmailController extends Controller
             return response()->json([
                 'message' => '登録メールを送信しました。',
             ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            \Log::error('メール送信エラー: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('メール送信エラー: ' . get_class($e) . ' ' . $e->getMessage());
+            \Log::error('mail.mailer=' . config('mail.default') . ' from=' . config('mail.from.address') . ' to=' . $email);
             \Log::error('スタックトレース: ' . $e->getTraceAsString());
-            return response()->json([
-                'message' => 'メール送信に失敗しました。時間をおいて再度お試しください。',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+            $body = ['message' => 'メール送信に失敗しました。時間をおいて再度お試しください。'];
+            if (config('app.debug')) {
+                $body['debug'] = [
+                    'type' => get_class($e),
+                    'detail' => $e->getMessage(),
+                ];
+            }
+
+            return response()->json($body, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
