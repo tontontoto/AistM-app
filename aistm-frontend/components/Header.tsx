@@ -57,7 +57,8 @@ export default function Header() {
     const [themeMode, setThemeMode] = useState<"system" | "light" | "dark">("system");
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        // 本番で env 未設定だと localhost を向いて通信不能になるため、同一オリジンの /api をデフォルトにする
+        const base = process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -228,6 +229,7 @@ export default function Header() {
     const unreadCount = notifications.filter(item => !item.read_at).length;
 
     const logoHref = isLoggedIn ? "/projects" : "/";
+    const avatarHref = isLoggedIn ? "/user/profile" : "/";
 
     return (
         <header className="w-full py-4 px-4 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -330,7 +332,7 @@ export default function Header() {
                             )}
                         </div>
                     )}
-                    <Link href="/user/profile">
+                    <Link href={avatarHref}>
                         <UserAvatar
                             name={user?.name}
                             username={user?.username}
