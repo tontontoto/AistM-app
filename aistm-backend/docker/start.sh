@@ -8,6 +8,19 @@ fi
 
 echo "[start] PORT=${PORT_TO_LISTEN}"
 
+# マイグレーション（Railway等の本番でもスキーマ差分を反映）
+echo "[start] running migrations..."
+tries=0
+until php artisan migrate --force; do
+  tries=$((tries+1))
+  if [ "$tries" -ge 10 ]; then
+    echo "[start] migrate failed after ${tries} attempts"
+    exit 1
+  fi
+  echo "[start] migrate failed; retrying (${tries}/10) ..."
+  sleep 2
+done
+
 # Laravelの初期化
 php artisan config:cache
 php artisan route:cache
