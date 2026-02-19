@@ -18,7 +18,7 @@ echo "[start] nginx config test..."
 nginx -t
 
 # PHP-FPMをバックグラウンドで起動
-php-fpm -D
+php-fpm -F &
 
 # Nginxをフォアグラウンドで起動
 echo "[start] starting nginx..."
