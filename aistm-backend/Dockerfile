@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     unzip \
+    nginx \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
@@ -20,19 +21,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Composer依存関係（キャッシュ最適化）
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
-# アプリケーションコード
 COPY . .
 
-# オートロード最適化
 RUN composer dump-autoload --optimize --no-dev
 
-# パーミッション設定
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 storage bootstrap/cache \
     && mkdir -p storage/framework/{sessions,views,cache} storage/logs
 
-EXPOSE 9000
+# Nginx設定とスタートスクリプトをコピー
+COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 8080
+CMD ["/start.sh"]
