@@ -22,7 +22,7 @@ function SetPasswordContent() {
     const [success, setSuccess] = useState(false);
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base = process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -133,7 +133,8 @@ function SetPasswordContent() {
                                     input_title="メールアドレス"
                                     input_id="email"
                                     input_type="email"
-                                    input_pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                    // pattern 属性はブラウザ実装差分で例外になることがあるため、JS側の検証＋type=emailに任せる
+                                    input_pattern=""
                                     value={email}
                                     onChange={(e) => {
                                         setEmail(e.target.value);

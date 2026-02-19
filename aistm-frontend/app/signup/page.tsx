@@ -173,7 +173,8 @@ export default function page() {
                             input_title=""
                             input_id="email"
                             input_type="email"
-                            input_pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                            // pattern 属性はブラウザ実装差分で例外になることがあるため、JS側の検証＋type=emailに任せる
+                            input_pattern=""
                             value={email}
                             onChange={(e) => {
                                 setEmail(e.target.value);
