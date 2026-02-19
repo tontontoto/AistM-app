@@ -13,7 +13,8 @@ export default function page() {
   const [loading, setLoading] = useState(false);
 
   const apiBase = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+    // Railway等の本番環境で env 未設定だと localhost を向いて通信不能になるため、同一オリジンの /api をデフォルトにする
+    const base = process.env.NEXT_PUBLIC_API_URL || "/api";
     return base.replace(/\/+$/, "");
   }, []);
 
