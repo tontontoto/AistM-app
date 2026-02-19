@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import UserAvatar from "./UserAvatar";
 
 function getCookie(name: string): string | null {
@@ -48,6 +49,7 @@ const reasonLabels: Record<string, string> = {
 };
 
 export default function Header() {
+    const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [avatarColor, setAvatarColor] = useState<string | undefined>(undefined);
@@ -63,28 +65,40 @@ export default function Header() {
     }, []);
 
     useEffect(() => {
-        const auth = getCookie("auth");
-        const userId = getCookie("user_id");
-        setIsLoggedIn(auth === "1");
+        const syncAuth = () => {
+            const auth = getCookie("auth");
+            const userId = getCookie("user_id");
+            const loggedIn = auth === "1";
+            setIsLoggedIn(loggedIn);
 
-        if (auth === "1" && userId) {
+            if (!loggedIn || !userId) {
+                setUser(null);
+                setAvatarColor(undefined);
+                setNotifications([]);
+                setNotificationsOpen(false);
+                return;
+            }
+
             // ユーザー情報を取得
             fetch(`${apiBase}/users/${userId}`)
-                .then(res => res.json())
-                .then(data => {
+                .then((res) => res.json())
+                .then((data) => {
                     setUser(data);
                     if (data?.avatar_color) {
                         setAvatarColor(data.avatar_color);
                     }
                 })
-                .catch(err => console.error("ユーザー情報取得エラー:", err));
+                .catch((err) => console.error("ユーザー情報取得エラー:", err));
 
             // ローカル保存済みの色があれば即時反映
             const savedColor = localStorage.getItem(`avatar_color_${userId}`);
             if (savedColor) {
                 setAvatarColor(savedColor);
             }
-        }
+        };
+
+        // ルート遷移後に cookie が更新されても反映されるよう同期
+        syncAuth();
 
         const handleAvatarColorUpdate = (event: Event) => {
             const customEvent = event as CustomEvent<{ userId: string; color: string }>;
@@ -104,14 +118,20 @@ export default function Header() {
             }
         };
 
+        const handleFocus = () => {
+            syncAuth();
+        };
+
         window.addEventListener("avatarColorUpdated", handleAvatarColorUpdate as EventListener);
         window.addEventListener("storage", handleStorage);
+        window.addEventListener("focus", handleFocus);
 
         return () => {
             window.removeEventListener("avatarColorUpdated", handleAvatarColorUpdate as EventListener);
             window.removeEventListener("storage", handleStorage);
+            window.removeEventListener("focus", handleFocus);
         };
-    }, [apiBase]);
+    }, [apiBase, pathname]);
 
     // テーマ（OSのダークモード対応 + アプリ内切り替え）
     useEffect(() => {
