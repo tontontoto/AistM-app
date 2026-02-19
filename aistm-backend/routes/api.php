@@ -11,6 +11,10 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PmDashboardController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', function () {
+    return response()->json(['ok' => true]);
+});
+
 Route::post('/signup', RegisterController::class);
 Route::get('/email/check', CheckEmailController::class);
 Route::post('/login', LoginController::class);
