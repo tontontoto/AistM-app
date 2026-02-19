@@ -21,6 +21,19 @@ until php artisan migrate --force; do
   sleep 2
 done
 
+# マスタ初期データ投入（何度起動しても重複しないようSeeder側でfirstOrCreate）
+echo "[start] seeding database..."
+tries=0
+until php artisan db:seed --force; do
+  tries=$((tries+1))
+  if [ "$tries" -ge 10 ]; then
+    echo "[start] seed failed after ${tries} attempts"
+    exit 1
+  fi
+  echo "[start] seed failed; retrying (${tries}/10) ..."
+  sleep 2
+done
+
 # Laravelの初期化
 php artisan config:cache
 php artisan route:cache

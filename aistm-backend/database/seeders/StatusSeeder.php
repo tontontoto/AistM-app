@@ -14,14 +14,14 @@ class StatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['name' => '企画中'],
-            ['name' => '進行中'],
-            ['name' => '完了'],
-            ['name' => '保留中'],
+            '企画中',
+            '進行中',
+            '完了',
+            '保留中',
         ];
 
-        foreach ($statuses as $status) {
-            Status::create($status);
+        foreach ($statuses as $name) {
+            Status::firstOrCreate(['name' => $name]);
         }
     }
 }

@@ -14,14 +14,14 @@ class PrioritySeeder extends Seeder
     public function run(): void
     {
         $priorities = [
-            ['name' => '低'],
-            ['name' => '中'],
-            ['name' => '高'],
-            ['name' => '緊急'],
+            '低',
+            '中',
+            '高',
+            '緊急',
         ];
 
-        foreach ($priorities as $priority) {
-            Priority::create($priority);
+        foreach ($priorities as $name) {
+            Priority::firstOrCreate(['name' => $name]);
         }
     }
 }
