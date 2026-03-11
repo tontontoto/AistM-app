@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,8 @@ export default function EditTaskPage() {
     const [taskLoading, setTaskLoading] = useState(true);
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -60,20 +61,22 @@ export default function EditTaskPage() {
             try {
                 const response = await fetch(`${apiBase}/tasks/${taskId}`);
                 const contentType = response.headers.get("content-type");
-                
+
                 if (!contentType || !contentType.includes("application/json")) {
                     throw new Error("データの取得に失敗しました");
                 }
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.message || "タスクの取得に失敗しました");
+                    throw new Error(
+                        errorData?.message || "タスクの取得に失敗しました",
+                    );
                 }
 
                 const data = await response.json().catch(() => {
                     throw new Error("レスポンスの解析に失敗しました");
                 });
-                
+
                 if (data) {
                     // 既存データをフォームに設定
                     setFormData({
@@ -90,7 +93,11 @@ export default function EditTaskPage() {
                 }
             } catch (err) {
                 console.error("タスク取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setTaskLoading(false);
             }
@@ -112,33 +119,63 @@ export default function EditTaskPage() {
                 ]);
 
                 if (!masterResponse.ok) {
-                    const contentType = masterResponse.headers.get("content-type");
-                    if (contentType && contentType.includes("application/json")) {
-                        const errorData = await masterResponse.json().catch(() => null);
-                        throw new Error(errorData?.message || `マスターデータの取得に失敗しました (${masterResponse.status})`);
+                    const contentType =
+                        masterResponse.headers.get("content-type");
+                    if (
+                        contentType &&
+                        contentType.includes("application/json")
+                    ) {
+                        const errorData = await masterResponse
+                            .json()
+                            .catch(() => null);
+                        throw new Error(
+                            errorData?.message ||
+                                `マスターデータの取得に失敗しました (${masterResponse.status})`,
+                        );
                     } else {
-                        throw new Error(`マスターデータの取得に失敗しました (${masterResponse.status})`);
+                        throw new Error(
+                            `マスターデータの取得に失敗しました (${masterResponse.status})`,
+                        );
                     }
                 }
                 if (!projectsResponse.ok) {
-                    const contentType = projectsResponse.headers.get("content-type");
-                    if (contentType && contentType.includes("application/json")) {
-                        const errorData = await projectsResponse.json().catch(() => null);
-                        throw new Error(errorData?.message || `プロジェクト一覧の取得に失敗しました (${projectsResponse.status})`);
+                    const contentType =
+                        projectsResponse.headers.get("content-type");
+                    if (
+                        contentType &&
+                        contentType.includes("application/json")
+                    ) {
+                        const errorData = await projectsResponse
+                            .json()
+                            .catch(() => null);
+                        throw new Error(
+                            errorData?.message ||
+                                `プロジェクト一覧の取得に失敗しました (${projectsResponse.status})`,
+                        );
                     } else {
-                        throw new Error(`プロジェクト一覧の取得に失敗しました (${projectsResponse.status})`);
+                        throw new Error(
+                            `プロジェクト一覧の取得に失敗しました (${projectsResponse.status})`,
+                        );
                     }
                 }
 
                 const masterData = await masterResponse.json().catch(() => {
-                    throw new Error("マスターデータのレスポンスがJSON形式ではありません");
+                    throw new Error(
+                        "マスターデータのレスポンスがJSON形式ではありません",
+                    );
                 });
                 const projects = await projectsResponse.json().catch(() => {
-                    throw new Error("プロジェクト一覧のレスポンスがJSON形式ではありません");
+                    throw new Error(
+                        "プロジェクト一覧のレスポンスがJSON形式ではありません",
+                    );
                 });
 
                 // データの検証
-                if (!masterData.statuses || !masterData.priorities || !masterData.users) {
+                if (
+                    !masterData.statuses ||
+                    !masterData.priorities ||
+                    !masterData.users
+                ) {
                     throw new Error("マスターデータの形式が正しくありません");
                 }
 
@@ -148,7 +185,11 @@ export default function EditTaskPage() {
                 });
             } catch (err) {
                 console.error("マスターデータの取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setMasterDataLoading(false);
             }
@@ -157,12 +198,16 @@ export default function EditTaskPage() {
         fetchMasterData();
     }, [apiBase]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >,
+    ) => {
         const { id, name, value } = e.target;
         const fieldName = id || name;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [fieldName]: value
+            [fieldName]: value,
         }));
     };
 
@@ -182,7 +227,9 @@ export default function EditTaskPage() {
 
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                throw new Error(
+                    "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                );
             }
 
             const data = await response.json().catch(() => {
@@ -196,7 +243,9 @@ export default function EditTaskPage() {
             alert("タスクが正常に更新されました");
             router.push(`/projects/tasks/${taskId}`);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "エラーが発生しました");
+            setError(
+                err instanceof Error ? err.message : "エラーが発生しました",
+            );
         } finally {
             setLoading(false);
         }
@@ -217,10 +266,15 @@ export default function EditTaskPage() {
     return (
         <div className="w-full">
             <div className="mb-6">
-                <Link href={`/projects/tasks/${taskId}`} className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block">
+                <Link
+                    href={`/projects/tasks/${taskId}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline mb-4 inline-block"
+                >
                     ← タスク詳細に戻る
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">タスク編集</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    タスク編集
+                </h1>
                 <p className="text-gray-600">タスク情報を編集します</p>
             </div>
 
@@ -245,7 +299,10 @@ export default function EditTaskPage() {
                         select_title="親プロジェクトの選択"
                         select_name="project_id"
                         select_id="project_id"
-                        options={masterData.projects.map((p) => ({ value: p.id.toString(), label: p.overview }))}
+                        options={masterData.projects.map((p) => ({
+                            value: p.id.toString(),
+                            label: p.overview,
+                        }))}
                         value={formData.project_id}
                         onChange={handleChange}
                         required
@@ -254,7 +311,10 @@ export default function EditTaskPage() {
                         select_title="タスクステータス"
                         select_name="status_id"
                         select_id="status_id"
-                        options={masterData.statuses.map((s) => ({ value: s.id.toString(), label: s.name }))}
+                        options={masterData.statuses.map((s) => ({
+                            value: s.id.toString(),
+                            label: s.name,
+                        }))}
                         value={formData.status_id}
                         onChange={handleChange}
                         required
@@ -263,13 +323,16 @@ export default function EditTaskPage() {
                         select_title="タスク優先度"
                         select_name="priority_id"
                         select_id="priority_id"
-                        options={masterData.priorities.map((p) => ({ value: p.id.toString(), label: p.name }))}
+                        options={masterData.priorities.map((p) => ({
+                            value: p.id.toString(),
+                            label: p.name,
+                        }))}
                         value={formData.priority_id}
                         onChange={handleChange}
                         required
                         isPriority={true}
                     />
-                    <Textarea 
+                    <Textarea
                         textarea_title="タスクの説明"
                         id="detail"
                         value={formData.detail}
@@ -279,18 +342,21 @@ export default function EditTaskPage() {
                         select_title="担当者"
                         select_name="user_id"
                         select_id="user_id"
-                        options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${maskEmail(u.email)})` }))}
+                        options={masterData.users.map((u) => ({
+                            value: u.id.toString(),
+                            label: `${u.name} (${maskEmail(u.email)})`,
+                        }))}
                         value={formData.user_id}
                         onChange={handleChange}
                         required
                     />
-                    <Date 
+                    <Date
                         label="開始日"
                         id="start_date"
                         value={formData.start_date}
                         onChange={handleChange}
                     />
-                    <Date 
+                    <Date
                         label="期限"
                         id="schedule"
                         value={formData.schedule}
@@ -305,10 +371,18 @@ export default function EditTaskPage() {
                         onChange={handleChange}
                     />
                     <div className="pt-4 border-t border-gray-200">
-                        <Button 
-                            button_type="submit" 
-                            button_title={loading ? "更新中..." : "タスクを更新"}
-                            disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0 || masterData.projects.length === 0}
+                        <Button
+                            button_type="submit"
+                            button_title={
+                                loading ? "更新中..." : "タスクを更新"
+                            }
+                            disabled={
+                                loading ||
+                                masterDataLoading ||
+                                masterData.statuses.length === 0 ||
+                                masterData.priorities.length === 0 ||
+                                masterData.projects.length === 0
+                            }
                         />
                     </div>
                 </form>

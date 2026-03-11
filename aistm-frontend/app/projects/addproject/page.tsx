@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Input from "../../(components)/input";
@@ -13,7 +13,12 @@ import { maskEmail } from "@/utils/maskEmail";
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
     priorities: Array<{ id: number; name: string }>;
-    users: Array<{ id: number; name: string; email: string; username?: string }>;
+    users: Array<{
+        id: number;
+        name: string;
+        email: string;
+        username?: string;
+    }>;
 }
 
 function getCookie(name: string): string | null {
@@ -47,7 +52,8 @@ export default function AddProjectPage() {
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -68,33 +74,48 @@ export default function AddProjectPage() {
                 const response = await fetch(`${apiBase}/master/all`);
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                    throw new Error(
+                        "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                    );
                 }
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.message || `マスターデータの取得に失敗しました (${response.status})`);
+                    throw new Error(
+                        errorData?.message ||
+                            `マスターデータの取得に失敗しました (${response.status})`,
+                    );
                 }
                 const data = await response.json().catch(() => {
                     throw new Error("レスポンスの解析に失敗しました");
                 });
-                
+
                 // データの検証
                 if (!data.statuses || !data.priorities || !data.users) {
                     throw new Error("マスターデータの形式が正しくありません");
                 }
-                
+
                 setMasterData(data);
-                
+
                 // デフォルト値を設定
                 if (data.statuses.length > 0) {
-                    setFormData(prev => ({ ...prev, status_id: data.statuses[0].id.toString() }));
+                    setFormData((prev) => ({
+                        ...prev,
+                        status_id: data.statuses[0].id.toString(),
+                    }));
                 }
                 if (data.priorities.length > 0) {
-                    setFormData(prev => ({ ...prev, priority_id: data.priorities[0].id.toString() }));
+                    setFormData((prev) => ({
+                        ...prev,
+                        priority_id: data.priorities[0].id.toString(),
+                    }));
                 }
             } catch (err) {
                 console.error("マスターデータの取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setMasterDataLoading(false);
             }
@@ -105,18 +126,27 @@ export default function AddProjectPage() {
 
     useEffect(() => {
         if (!currentUserId || masterData.users.length === 0) return;
-        const currentUser = masterData.users.find(user => user.id === currentUserId);
-        if (currentUser && !selectedUsers.some(user => user.id === currentUser.id)) {
-            setSelectedUsers(prev => [...prev, currentUser]);
+        const currentUser = masterData.users.find(
+            (user) => user.id === currentUserId,
+        );
+        if (
+            currentUser &&
+            !selectedUsers.some((user) => user.id === currentUser.id)
+        ) {
+            setSelectedUsers((prev) => [...prev, currentUser]);
         }
     }, [currentUserId, masterData.users, selectedUsers]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >,
+    ) => {
         const { id, name, value } = e.target;
         const fieldName = id || name;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [fieldName]: value
+            [fieldName]: value,
         }));
     };
 
@@ -145,14 +175,16 @@ export default function AddProjectPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    user_ids: selectedUsers.map(user => user.id),
+                    user_ids: selectedUsers.map((user) => user.id),
                     created_by: currentUserId,
                 }),
             });
 
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                throw new Error(
+                    "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                );
             }
 
             const data = await response.json().catch(() => {
@@ -160,13 +192,17 @@ export default function AddProjectPage() {
             });
 
             if (!response.ok) {
-                throw new Error(data.message || "プロジェクトの作成に失敗しました");
+                throw new Error(
+                    data.message || "プロジェクトの作成に失敗しました",
+                );
             }
 
             alert("プロジェクトが正常に作成されました");
             router.push("/projects");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "エラーが発生しました");
+            setError(
+                err instanceof Error ? err.message : "エラーが発生しました",
+            );
         } finally {
             setLoading(false);
         }
@@ -178,8 +214,18 @@ export default function AddProjectPage() {
                 {/* エラーメッセージ */}
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
-                        <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <svg
+                            className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
                         </svg>
                         <p className="text-red-700">{error}</p>
                     </div>
@@ -189,11 +235,29 @@ export default function AddProjectPage() {
                     <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
                         <div className="flex items-center justify-center py-12">
                             <div className="flex flex-col items-center gap-3">
-                                <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg
+                                    className="animate-spin h-8 w-8 text-blue-600"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
                                 </svg>
-                                <p className="text-gray-500">マスターデータを読み込み中...</p>
+                                <p className="text-gray-500">
+                                    マスターデータを読み込み中...
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -203,17 +267,32 @@ export default function AddProjectPage() {
                             {/* 基本情報セクション */}
                             <div className="border-b border-gray-100 pb-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <svg
+                                        className="w-5 h-5 text-blue-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        ></path>
                                     </svg>
                                     基本情報
                                 </h2>
                                 <div className="space-y-6">
                                     {/* プロジェクト名 - 大きめに表示 */}
                                     <div className="w-full">
-                                        <label htmlFor="overview" className="block text-lg font-semibold text-gray-800 mb-3">
+                                        <label
+                                            htmlFor="overview"
+                                            className="block text-lg font-semibold text-gray-800 mb-3"
+                                        >
                                             プロジェクト名
-                                            <span className="text-red-500 ml-1">*</span>
+                                            <span className="text-red-500 ml-1">
+                                                *
+                                            </span>
                                         </label>
                                         <input
                                             type="text"
@@ -231,85 +310,157 @@ export default function AddProjectPage() {
                                             select_title="プロジェクトステータス"
                                             select_name="status_id"
                                             select_id="status_id"
-                                            options={masterData.statuses.map((s) => ({ value: s.id.toString(), label: s.name }))}
+                                            options={masterData.statuses.map(
+                                                (s) => ({
+                                                    value: s.id.toString(),
+                                                    label: s.name,
+                                                }),
+                                            )}
                                             value={formData.status_id}
                                             onChange={handleChange}
                                             required
                                         />
-                                    <Select
-                                        select_title="プロジェクト優先度"
-                                        select_name="priority_id"
-                                        select_id="priority_id"
-                                        options={masterData.priorities.map((p) => ({ value: p.id.toString(), label: p.name }))}
-                                        value={formData.priority_id}
-                                        onChange={handleChange}
-                                        required
-                                        isPriority={true}
-                                    />
-                                    <div>
-                                        <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-2">
-                                            担当者
-                                            <span className="text-red-500 ml-1">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="userSearch"
-                                            value={userSearch}
-                                            onChange={(e) => setUserSearch(e.target.value)}
-                                            placeholder="名前やメールで検索して追加"
-                                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                        <Select
+                                            select_title="プロジェクト優先度"
+                                            select_name="priority_id"
+                                            select_id="priority_id"
+                                            options={masterData.priorities.map(
+                                                (p) => ({
+                                                    value: p.id.toString(),
+                                                    label: p.name,
+                                                }),
+                                            )}
+                                            value={formData.priority_id}
+                                            onChange={handleChange}
+                                            required
+                                            isPriority={true}
                                         />
-                                        {userSearch.trim() && (
-                                            <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-40 overflow-y-auto">
-                                                {masterData.users
-                                                    .filter(user => {
-                                                        const query = userSearch.toLowerCase();
-                                                        const name = (user.name || "").toLowerCase();
-                                                        const email = (user.email || "").toLowerCase();
-                                                        const username = (user.username || "").toLowerCase();
-                                                        return (
-                                                            (name.includes(query) || email.includes(query) || username.includes(query))
-                                                            && !selectedUsers.some(selected => selected.id === user.id)
-                                                        );
-                                                    })
-                                                    .map(user => (
+                                        <div>
+                                            <label
+                                                htmlFor="userSearch"
+                                                className="block text-sm font-medium text-gray-700 mb-2"
+                                            >
+                                                担当者
+                                                <span className="text-red-500 ml-1">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="userSearch"
+                                                value={userSearch}
+                                                onChange={(e) =>
+                                                    setUserSearch(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="名前やメールで検索して追加"
+                                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                            />
+                                            {userSearch.trim() && (
+                                                <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-40 overflow-y-auto">
+                                                    {masterData.users
+                                                        .filter((user) => {
+                                                            const query =
+                                                                userSearch.toLowerCase();
+                                                            const name = (
+                                                                user.name || ""
+                                                            ).toLowerCase();
+                                                            const email = (
+                                                                user.email || ""
+                                                            ).toLowerCase();
+                                                            const username = (
+                                                                user.username ||
+                                                                ""
+                                                            ).toLowerCase();
+                                                            return (
+                                                                (name.includes(
+                                                                    query,
+                                                                ) ||
+                                                                    email.includes(
+                                                                        query,
+                                                                    ) ||
+                                                                    username.includes(
+                                                                        query,
+                                                                    )) &&
+                                                                !selectedUsers.some(
+                                                                    (
+                                                                        selected,
+                                                                    ) =>
+                                                                        selected.id ===
+                                                                        user.id,
+                                                                )
+                                                            );
+                                                        })
+                                                        .map((user) => (
+                                                            <button
+                                                                type="button"
+                                                                key={user.id}
+                                                                onClick={() => {
+                                                                    setSelectedUsers(
+                                                                        (
+                                                                            prev,
+                                                                        ) => [
+                                                                            ...prev,
+                                                                            user,
+                                                                        ],
+                                                                    );
+                                                                    setUserSearch(
+                                                                        "",
+                                                                    );
+                                                                }}
+                                                                className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
+                                                            >
+                                                                {user.name ||
+                                                                    user.username ||
+                                                                    "名前なし"}{" "}
+                                                                (
+                                                                {maskEmail(
+                                                                    user.email,
+                                                                )}
+                                                                )
+                                                            </button>
+                                                        ))}
+                                                </div>
+                                            )}
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {selectedUsers.map((user) => (
+                                                    <span
+                                                        key={user.id}
+                                                        className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                                                    >
+                                                        {user.name ||
+                                                            user.username ||
+                                                            "名前なし"}
                                                         <button
                                                             type="button"
-                                                            key={user.id}
-                                                            onClick={() => {
-                                                                setSelectedUsers(prev => [...prev, user]);
-                                                                setUserSearch("");
-                                                            }}
-                                                            className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
+                                                            onClick={() =>
+                                                                setSelectedUsers(
+                                                                    (prev) =>
+                                                                        prev.filter(
+                                                                            (
+                                                                                selected,
+                                                                            ) =>
+                                                                                selected.id !==
+                                                                                user.id,
+                                                                        ),
+                                                                )
+                                                            }
+                                                            className="text-blue-500 hover:text-blue-700"
+                                                            aria-label="担当者を削除"
                                                         >
-                                                            {user.name || user.username || "名前なし"} ({maskEmail(user.email)})
+                                                            ×
                                                         </button>
-                                                    ))}
+                                                    </span>
+                                                ))}
+                                                {selectedUsers.length === 0 && (
+                                                    <span className="text-sm text-gray-400">
+                                                        担当者が未選択です
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                            {selectedUsers.map(user => (
-                                                <span
-                                                    key={user.id}
-                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
-                                                >
-                                                    {user.name || user.username || "名前なし"}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedUsers(prev => prev.filter(selected => selected.id !== user.id))}
-                                                        className="text-blue-500 hover:text-blue-700"
-                                                        aria-label="担当者を削除"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))}
-                                            {selectedUsers.length === 0 && (
-                                                <span className="text-sm text-gray-400">担当者が未選択です</span>
-                                            )}
                                         </div>
-                                    </div>
-                                        <Date 
+                                        <Date
                                             id="schedule"
                                             value={formData.schedule}
                                             onChange={handleChange}
@@ -321,13 +472,23 @@ export default function AddProjectPage() {
                             {/* 詳細情報セクション */}
                             <div className="border-b border-gray-100 pb-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <svg
+                                        className="w-5 h-5 text-blue-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        ></path>
                                     </svg>
                                     詳細情報
                                 </h2>
                                 <div className="space-y-6">
-                                    <Textarea 
+                                    <Textarea
                                         textarea_title="プロジェクトの説明"
                                         id="detail"
                                         value={formData.detail}
@@ -352,10 +513,19 @@ export default function AddProjectPage() {
                                 >
                                     キャンセル
                                 </Link>
-                                <Button 
-                                    button_type="submit" 
-                                    button_title={loading ? "作成中..." : "プロジェクトを作成"}
-                                    disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0}
+                                <Button
+                                    button_type="submit"
+                                    button_title={
+                                        loading
+                                            ? "作成中..."
+                                            : "プロジェクトを作成"
+                                    }
+                                    disabled={
+                                        loading ||
+                                        masterDataLoading ||
+                                        masterData.statuses.length === 0 ||
+                                        masterData.priorities.length === 0
+                                    }
                                 />
                             </div>
                         </form>
@@ -365,4 +535,3 @@ export default function AddProjectPage() {
         </div>
     );
 }
-

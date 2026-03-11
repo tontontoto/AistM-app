@@ -75,7 +75,8 @@ export default function TasksPage() {
     });
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -83,7 +84,7 @@ export default function TasksPage() {
         const fetchTasks = async () => {
             try {
                 const response = await fetch(`${apiBase}/tasks`);
-                
+
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
                     // JSONでない場合は空配列として扱う
@@ -96,7 +97,7 @@ export default function TasksPage() {
                     setTasks([]);
                     return;
                 }
-                
+
                 const data = await response.json().catch(() => []);
                 setTasks(Array.isArray(data) ? data : []);
             } catch (err) {
@@ -113,7 +114,12 @@ export default function TasksPage() {
 
     useEffect(() => {
         if (!helpMenu.show) return;
-        const handleClick = () => setHelpMenu(prev => ({ ...prev, show: false, showReasons: false }));
+        const handleClick = () =>
+            setHelpMenu((prev) => ({
+                ...prev,
+                show: false,
+                showReasons: false,
+            }));
         window.addEventListener("click", handleClick);
         return () => window.removeEventListener("click", handleClick);
     }, [helpMenu.show]);
@@ -160,8 +166,12 @@ export default function TasksPage() {
     return (
         <div className="w-full">
             <div className="mb-4 sm:mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">タスク一覧</h1>
-                <p className="text-sm sm:text-base text-gray-600">タスクを管理・確認できます</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+                    タスク一覧
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600">
+                    タスクを管理・確認できます
+                </p>
             </div>
 
             {loading ? (
@@ -171,7 +181,9 @@ export default function TasksPage() {
             ) : tasks.length === 0 ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                     <p className="text-gray-500 text-lg">タスクがありません</p>
-                    <p className="text-gray-400 text-sm mt-2">新しいタスクを作成してください</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                        新しいタスクを作成してください
+                    </p>
                 </div>
             ) : (
                 <div className="space-y-3 sm:space-y-4">
@@ -180,37 +192,65 @@ export default function TasksPage() {
                             key={task.id}
                             href={`/projects/tasks/${task.id}`}
                             className="block bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-all duration-200"
-                            onContextMenu={(event) => handleOpenHelpMenu(event, task)}
+                            onContextMenu={(event) =>
+                                handleOpenHelpMenu(event, task)
+                            }
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">{task.overview}</h3>
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
+                                        {task.overview}
+                                    </h3>
                                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                                         <span className="flex items-center gap-1">
-                                            <span className="text-gray-500">プロジェクト:</span>
-                                            <span className="font-medium">{task.project?.overview || "未設定"}</span>
+                                            <span className="text-gray-500">
+                                                プロジェクト:
+                                            </span>
+                                            <span className="font-medium">
+                                                {task.project?.overview ||
+                                                    "未設定"}
+                                            </span>
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="text-gray-500">ステータス:</span>
+                                            <span className="text-gray-500">
+                                                ステータス:
+                                            </span>
                                             <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
                                                 {task.status?.name || "未設定"}
                                             </span>
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="text-gray-500">優先度:</span>
+                                            <span className="text-gray-500">
+                                                優先度:
+                                            </span>
                                             <span className="inline-block px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-semibold">
-                                                {task.priority?.name || "未設定"}
+                                                {task.priority?.name ||
+                                                    "未設定"}
                                             </span>
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="text-gray-500">担当者:</span>
-                                            <span className="font-medium">{task.user?.name || "未設定"}</span>
+                                            <span className="text-gray-500">
+                                                担当者:
+                                            </span>
+                                            <span className="font-medium">
+                                                {task.user?.name || "未設定"}
+                                            </span>
                                         </span>
                                     </div>
                                 </div>
                                 <div className="text-blue-600 ml-4">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 5l7 7-7 7"
+                                        />
                                     </svg>
                                 </div>
                             </div>
@@ -228,16 +268,23 @@ export default function TasksPage() {
                         {!helpMenu.showReasons ? (
                             <button
                                 type="button"
-                                onClick={() => setHelpMenu(prev => ({ ...prev, showReasons: true }))}
+                                onClick={() =>
+                                    setHelpMenu((prev) => ({
+                                        ...prev,
+                                        showReasons: true,
+                                    }))
+                                }
                                 className="w-full text-left text-sm text-gray-700 hover:text-blue-600"
                             >
                                 PMに通知
                             </button>
                         ) : (
                             <div>
-                                <p className="text-xs text-gray-500 mb-2">何に困っていますか？</p>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    何に困っていますか？
+                                </p>
                                 <div className="flex flex-wrap gap-2">
-                                    {helpReasons.map(reason => (
+                                    {helpReasons.map((reason) => (
                                         <button
                                             key={reason.value}
                                             type="button"
@@ -248,7 +295,13 @@ export default function TasksPage() {
                                                     reasonLabel: reason.label,
                                                     reasonValue: reason.value,
                                                 });
-                                                setHelpMenu({ task: null, x: 0, y: 0, show: false, showReasons: false });
+                                                setHelpMenu({
+                                                    task: null,
+                                                    x: 0,
+                                                    y: 0,
+                                                    show: false,
+                                                    showReasons: false,
+                                                });
                                             }}
                                             className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100"
                                         >
@@ -264,14 +317,24 @@ export default function TasksPage() {
             {confirmHelp.open && confirmHelp.task && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-5">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">送信しますか？</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                            送信しますか？
+                        </h3>
                         <p className="text-sm text-gray-600 mb-4">
-                            「{confirmHelp.task.overview}」について「{confirmHelp.reasonLabel}」でPMに通知します。
+                            「{confirmHelp.task.overview}」について「
+                            {confirmHelp.reasonLabel}」でPMに通知します。
                         </p>
                         <div className="flex justify-end gap-2">
                             <button
                                 type="button"
-                                onClick={() => setConfirmHelp({ open: false, task: null, reasonLabel: "", reasonValue: "" })}
+                                onClick={() =>
+                                    setConfirmHelp({
+                                        open: false,
+                                        task: null,
+                                        reasonLabel: "",
+                                        reasonValue: "",
+                                    })
+                                }
                                 className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
                             >
                                 キャンセル
@@ -279,8 +342,16 @@ export default function TasksPage() {
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    await handleSendHelp(confirmHelp.task.id, confirmHelp.reasonValue);
-                                    setConfirmHelp({ open: false, task: null, reasonLabel: "", reasonValue: "" });
+                                    await handleSendHelp(
+                                        confirmHelp.task.id,
+                                        confirmHelp.reasonValue,
+                                    );
+                                    setConfirmHelp({
+                                        open: false,
+                                        task: null,
+                                        reasonLabel: "",
+                                        reasonValue: "",
+                                    });
                                 }}
                                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >

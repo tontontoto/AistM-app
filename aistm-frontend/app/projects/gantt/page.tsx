@@ -12,7 +12,12 @@ type ApiTask = {
     schedule: string | null; // YYYY-MM-DD
     is_completed?: boolean;
     project?: { id: number; overview?: string } | null;
-    user?: { id: number; name?: string; username?: string; email?: string } | null;
+    user?: {
+        id: number;
+        name?: string;
+        username?: string;
+        email?: string;
+    } | null;
     status?: { name?: string } | null;
     priority?: { name?: string } | null;
 };
@@ -72,7 +77,8 @@ export default function GanttPage() {
     const [limit, setLimit] = useState(60);
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -84,17 +90,25 @@ export default function GanttPage() {
                 const response = await fetch(`${apiBase}/tasks`);
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                    throw new Error(
+                        "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                    );
                 }
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.message || "タスクの取得に失敗しました");
+                    throw new Error(
+                        errorData?.message || "タスクの取得に失敗しました",
+                    );
                 }
                 const data = (await response.json().catch(() => [])) as unknown;
                 setTasks(Array.isArray(data) ? (data as ApiTask[]) : []);
             } catch (err) {
                 console.error("タスク取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setLoading(false);
             }
@@ -109,21 +123,27 @@ export default function GanttPage() {
             .filter((task) => task.schedule)
             .filter((task) => !task.is_completed);
 
-        if (incomplete.length === 0) return { minStartMs: undefined, maxEndMs: undefined };
+        if (incomplete.length === 0)
+            return { minStartMs: undefined, maxEndMs: undefined };
 
         const starts = incomplete.map((task) => {
-            if (task.start_date) return parseStartOfDayUtcFromYmd(task.start_date);
+            if (task.start_date)
+                return parseStartOfDayUtcFromYmd(task.start_date);
             return parseStartOfDayUtcFromIso(task.created_at);
         });
 
-        const ends = incomplete.map((task) => parseEndOfDayUtc(task.schedule as string));
+        const ends = incomplete.map((task) =>
+            parseEndOfDayUtc(task.schedule as string),
+        );
 
         const minStart = Math.min(...starts);
         const maxEnd = Math.max(...ends);
         const tenDays = 10 * 24 * 60 * 60 * 1000;
 
         return {
-            minStartMs: Number.isFinite(minStart) ? minStart - tenDays : undefined,
+            minStartMs: Number.isFinite(minStart)
+                ? minStart - tenDays
+                : undefined,
             maxEndMs: Number.isFinite(maxEnd) ? maxEnd + tenDays : undefined,
         };
     }, [tasks]);
@@ -135,28 +155,43 @@ export default function GanttPage() {
         const filtered = tasks
             .filter((task) => task.schedule)
             .filter((task) => (hideCompleted ? !task.is_completed : true))
-            .filter((task) => (onlyMyTasks && myUserId ? task.user?.id === myUserId : true))
+            .filter((task) =>
+                onlyMyTasks && myUserId ? task.user?.id === myUserId : true,
+            )
             .filter((task) => {
                 if (!key) return true;
                 const haystack = [
                     task.overview,
                     task.project?.overview || "",
-                    task.user?.name || task.user?.username || task.user?.email || "",
+                    task.user?.name ||
+                        task.user?.username ||
+                        task.user?.email ||
+                        "",
                 ]
                     .join(" ")
                     .toLowerCase();
                 return haystack.includes(key);
             })
             .map((task) => {
-                const startMs = task.start_date ? parseStartOfDayUtcFromYmd(task.start_date) : parseStartOfDayUtcFromIso(task.created_at);
-                const endMs = task.schedule ? parseEndOfDayUtc(task.schedule) : startMs;
-                const safeStart = Number.isFinite(startMs) ? startMs : Date.now();
+                const startMs = task.start_date
+                    ? parseStartOfDayUtcFromYmd(task.start_date)
+                    : parseStartOfDayUtcFromIso(task.created_at);
+                const endMs = task.schedule
+                    ? parseEndOfDayUtc(task.schedule)
+                    : startMs;
+                const safeStart = Number.isFinite(startMs)
+                    ? startMs
+                    : Date.now();
                 const safeEnd = Number.isFinite(endMs) ? endMs : safeStart;
 
                 const projectId = task.project?.id ?? 0;
-                const projectName = task.project?.overview || "プロジェクト不明";
+                const projectName =
+                    task.project?.overview || "プロジェクト不明";
                 const taskName = task.overview || "タスク";
-                const assignee = task.user?.name || task.user?.username || (task.user?.email ? maskEmail(task.user.email) : undefined);
+                const assignee =
+                    task.user?.name ||
+                    task.user?.username ||
+                    (task.user?.email ? maskEmail(task.user.email) : undefined);
 
                 // y軸ラベルはユニークになるようIDを含める（重複ラベルだと同じ行に重なるため）
                 const label = clampText(`#${task.id} ${taskName}`, 34);
@@ -166,7 +201,9 @@ export default function GanttPage() {
                     label,
                     startMs: Math.min(safeStart, safeEnd),
                     endMs: Math.max(safeStart, safeEnd),
-                    color: projectId ? colorFromProjectId(projectId) : "hsl(210 10% 50%)",
+                    color: projectId
+                        ? colorFromProjectId(projectId)
+                        : "hsl(210 10% 50%)",
                     meta: {
                         project: projectName,
                         task: taskName,
@@ -184,7 +221,9 @@ export default function GanttPage() {
     return (
         <div className="w-full">
             <div className="mb-4 sm:mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">ガントチャート（全体）</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+                    ガントチャート（全体）
+                </h1>
                 <p className="text-sm sm:text-base text-gray-600">
                     タスクの開始（作成日時）〜期限（schedule）を可視化します（期限が未設定のタスクは除外）。
                 </p>
@@ -193,7 +232,9 @@ export default function GanttPage() {
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-4">
                 <div className="flex flex-col lg:flex-row lg:items-end gap-3">
                     <div className="flex-1">
-                        <label className="block text-xs text-gray-600 mb-1">検索</label>
+                        <label className="block text-xs text-gray-600 mb-1">
+                            検索
+                        </label>
                         <input
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
@@ -207,7 +248,9 @@ export default function GanttPage() {
                             <input
                                 type="checkbox"
                                 checked={onlyMyTasks}
-                                onChange={(e) => setOnlyMyTasks(e.target.checked)}
+                                onChange={(e) =>
+                                    setOnlyMyTasks(e.target.checked)
+                                }
                             />
                             自分担当のみ
                         </label>
@@ -216,16 +259,22 @@ export default function GanttPage() {
                             <input
                                 type="checkbox"
                                 checked={hideCompleted}
-                                onChange={(e) => setHideCompleted(e.target.checked)}
+                                onChange={(e) =>
+                                    setHideCompleted(e.target.checked)
+                                }
                             />
                             完了を除外
                         </label>
 
                         <div>
-                            <label className="block text-xs text-gray-600 mb-1">表示件数</label>
+                            <label className="block text-xs text-gray-600 mb-1">
+                                表示件数
+                            </label>
                             <select
                                 value={limit}
-                                onChange={(e) => setLimit(Number(e.target.value))}
+                                onChange={(e) =>
+                                    setLimit(Number(e.target.value))
+                                }
                                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                             >
                                 <option value={30}>30</option>
@@ -236,7 +285,9 @@ export default function GanttPage() {
                         </div>
                     </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-3">表示中: {rows.length}件</p>
+                <p className="text-xs text-gray-500 mt-3">
+                    表示中: {rows.length}件
+                </p>
             </div>
 
             {loading ? (
@@ -249,8 +300,12 @@ export default function GanttPage() {
                 </div>
             ) : rows.length === 0 ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                    <p className="text-gray-500 text-lg">表示できるタスクがありません</p>
-                    <p className="text-gray-400 text-sm mt-2">期限（schedule）が設定されたタスクが対象です</p>
+                    <p className="text-gray-500 text-lg">
+                        表示できるタスクがありません
+                    </p>
+                    <p className="text-gray-400 text-sm mt-2">
+                        期限（schedule）が設定されたタスクが対象です
+                    </p>
                 </div>
             ) : (
                 <GanttChartClient
@@ -262,4 +317,3 @@ export default function GanttPage() {
         </div>
     );
 }
-

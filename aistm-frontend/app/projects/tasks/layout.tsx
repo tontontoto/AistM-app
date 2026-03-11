@@ -50,7 +50,7 @@ export default function TasksLayout({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base = process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 

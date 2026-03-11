@@ -61,14 +61,19 @@ export default function TaskDetails({ selectedId }: Props) {
     const [updatingCompletion, setUpdatingCompletion] = useState(false);
     const [showHelpReasons, setShowHelpReasons] = useState(false);
     const [sendingHelp, setSendingHelp] = useState(false);
-    const [confirmHelp, setConfirmHelp] = useState<{ open: boolean; label: string; value: string }>({
+    const [confirmHelp, setConfirmHelp] = useState<{
+        open: boolean;
+        label: string;
+        value: string;
+    }>({
         open: false,
         label: "",
         value: "",
     });
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -84,7 +89,7 @@ export default function TaskDetails({ selectedId }: Props) {
             try {
                 const response = await fetch(`${apiBase}/tasks/${selectedId}`);
                 const contentType = response.headers.get("content-type");
-                
+
                 if (!contentType || !contentType.includes("application/json")) {
                     setError("データの取得に失敗しました");
                     return;
@@ -92,14 +97,16 @@ export default function TaskDetails({ selectedId }: Props) {
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    setError(errorData?.message || "タスクの取得に失敗しました");
+                    setError(
+                        errorData?.message || "タスクの取得に失敗しました",
+                    );
                     return;
                 }
 
                 const data = await response.json().catch(() => {
                     setError("レスポンスの解析に失敗しました");
                 });
-                
+
                 if (data) {
                     setTask(data);
                 }
@@ -140,7 +147,9 @@ export default function TaskDetails({ selectedId }: Props) {
             }
 
             // タスク情報を更新
-            setTask(prev => prev ? { ...prev, is_completed: newCompletionStatus } : null);
+            setTask((prev) =>
+                prev ? { ...prev, is_completed: newCompletionStatus } : null,
+            );
         } catch (err) {
             console.error("完了状態更新エラー:", err);
             setError("完了状態の更新に失敗しました");
@@ -261,32 +270,46 @@ export default function TaskDetails({ selectedId }: Props) {
             {/* ヘッダー */}
             <div className="border-b border-gray-200 pb-4">
                 <div className="mb-4">
-                    <Link 
-                        href="/projects/tasks" 
+                    <Link
+                        href="/projects/tasks"
                         className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 19l-7-7 7-7"
+                            ></path>
                         </svg>
                         タスク一覧に戻る
                     </Link>
                 </div>
                 <p className="text-sm text-gray-500 mb-2">タスクの詳細情報</p>
                 <div className="flex items-center justify-between">
-                    <h2 className={`text-2xl font-bold transition-all ${task.is_completed === 1 ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                    <h2
+                        className={`text-2xl font-bold transition-all ${task.is_completed === 1 ? "text-gray-400 line-through" : "text-gray-800"}`}
+                    >
                         {task.overview}
                     </h2>
                     {/* iOS風チェックボックス */}
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
-                            onClick={() => setShowHelpReasons(prev => !prev)}
+                            onClick={() => setShowHelpReasons((prev) => !prev)}
                             className="px-3 py-2 text-xs font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
                         >
                             PMに通知
                         </button>
-                        <span className={`text-sm font-medium ${task.is_completed === 1 ? 'text-green-600' : 'text-gray-600'}`}>
-                            {task.is_completed === 1 ? '完了' : '未完了'}
+                        <span
+                            className={`text-sm font-medium ${task.is_completed === 1 ? "text-green-600" : "text-gray-600"}`}
+                        >
+                            {task.is_completed === 1 ? "完了" : "未完了"}
                         </span>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -303,13 +326,21 @@ export default function TaskDetails({ selectedId }: Props) {
                 </div>
                 {showHelpReasons && (
                     <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 mb-2">何に困っていますか？</p>
+                        <p className="text-xs text-gray-600 mb-2">
+                            何に困っていますか？
+                        </p>
                         <div className="flex flex-wrap gap-2">
-                            {helpReasons.map(reason => (
+                            {helpReasons.map((reason) => (
                                 <button
                                     key={reason.value}
                                     type="button"
-                                    onClick={() => setConfirmHelp({ open: true, label: reason.label, value: reason.value })}
+                                    onClick={() =>
+                                        setConfirmHelp({
+                                            open: true,
+                                            label: reason.label,
+                                            value: reason.value,
+                                        })
+                                    }
                                     disabled={sendingHelp}
                                     className="px-2 py-1 text-xs bg-white text-blue-700 rounded-full border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
                                 >
@@ -323,14 +354,23 @@ export default function TaskDetails({ selectedId }: Props) {
             {confirmHelp.open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-5">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">送信しますか？</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                            送信しますか？
+                        </h3>
                         <p className="text-sm text-gray-600 mb-4">
-                            「{task.overview}」について「{confirmHelp.label}」でPMに通知します。
+                            「{task.overview}」について「{confirmHelp.label}
+                            」でPMに通知します。
                         </p>
                         <div className="flex justify-end gap-2">
                             <button
                                 type="button"
-                                onClick={() => setConfirmHelp({ open: false, label: "", value: "" })}
+                                onClick={() =>
+                                    setConfirmHelp({
+                                        open: false,
+                                        label: "",
+                                        value: "",
+                                    })
+                                }
                                 className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
                             >
                                 キャンセル
@@ -339,7 +379,11 @@ export default function TaskDetails({ selectedId }: Props) {
                                 type="button"
                                 onClick={async () => {
                                     await handleSendHelp(confirmHelp.value);
-                                    setConfirmHelp({ open: false, label: "", value: "" });
+                                    setConfirmHelp({
+                                        open: false,
+                                        label: "",
+                                        value: "",
+                                    });
                                 }}
                                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
@@ -358,104 +402,143 @@ export default function TaskDetails({ selectedId }: Props) {
                         href={`/projects/tasks/${task.id}/edit`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            ></path>
                         </svg>
                         編集
                     </Link>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 完了状態 */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">完了状態</p>
-                    <div className="flex items-center gap-2">
-                        {task.is_completed === 1 ? (
-                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                完了
-                            </span>
-                        ) : (
-                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                                未完了
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* 親プロジェクト */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">親プロジェクト</p>
-                    <Link 
-                        href={`/projects/${task.project.id}`}
-                        className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
-                    >
-                        {task.project?.overview || "未設定"}
-                    </Link>
-                </div>
-
-                {/* ステータス */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">ステータス</p>
-                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                        {task.status?.name || "未設定"}
-                    </span>
-                </div>
-
-                {/* 優先度 */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">優先度</p>
-                    <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
-                        {task.priority?.name || "未設定"}
-                    </span>
-                </div>
-
-                {/* 担当者 */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">担当者</p>
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-gray-800">{task.user?.name || "未設定"}</span>
-                        {task.user?.email && (
-                            <span className="text-sm text-gray-500">{maskEmail(task.user.email)}</span>
-                        )}
-                    </div>
-                </div>
-
-                {/* 期限 */}
-                {task.schedule && (
+                    {/* 完了状態 */}
                     <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">期限</p>
-                        <p className="font-semibold text-gray-800">
-                            {new Date(task.schedule).toLocaleDateString('ja-JP', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}
+                        <p className="text-xs text-gray-500 mb-1">完了状態</p>
+                        <div className="flex items-center gap-2">
+                            {task.is_completed === 1 ? (
+                                <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    完了
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-2 px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    未完了
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 親プロジェクト */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">
+                            親プロジェクト
+                        </p>
+                        <Link
+                            href={`/projects/${task.project.id}`}
+                            className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
+                        >
+                            {task.project?.overview || "未設定"}
+                        </Link>
+                    </div>
+
+                    {/* ステータス */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">ステータス</p>
+                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                            {task.status?.name || "未設定"}
+                        </span>
+                    </div>
+
+                    {/* 優先度 */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">優先度</p>
+                        <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
+                            {task.priority?.name || "未設定"}
+                        </span>
+                    </div>
+
+                    {/* 担当者 */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">担当者</p>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-gray-800">
+                                {task.user?.name || "未設定"}
+                            </span>
+                            {task.user?.email && (
+                                <span className="text-sm text-gray-500">
+                                    {maskEmail(task.user.email)}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 期限 */}
+                    {task.schedule && (
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-gray-500 mb-1">期限</p>
+                            <p className="font-semibold text-gray-800">
+                                {new Date(task.schedule).toLocaleDateString(
+                                    "ja-JP",
+                                    {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    },
+                                )}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* 作成日時 */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">作成日時</p>
+                        <p className="text-sm text-gray-700">
+                            {new Date(task.created_at).toLocaleString("ja-JP")}
                         </p>
                     </div>
-                )}
-
-                {/* 作成日時 */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">作成日時</p>
-                    <p className="text-sm text-gray-700">
-                        {new Date(task.created_at).toLocaleString('ja-JP')}
-                    </p>
-                </div>
                 </div>
             </div>
 
             {/* 説明 */}
             {task.detail && (
                 <div className="border-t border-gray-200 pt-4">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">説明</p>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                        説明
+                    </p>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-gray-700 whitespace-pre-wrap">{task.detail}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">
+                            {task.detail}
+                        </p>
                     </div>
                 </div>
             )}
@@ -463,8 +546,10 @@ export default function TaskDetails({ selectedId }: Props) {
             {/* 関連リンク */}
             {task.related_url && (
                 <div className="border-t border-gray-200 pt-4">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">関連リンク</p>
-                    <a 
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                        関連リンク
+                    </p>
+                    <a
                         href={task.related_url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -479,14 +564,17 @@ export default function TaskDetails({ selectedId }: Props) {
             <div className="border-t border-gray-200 pt-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-xs text-gray-400">
-                        最終更新: {new Date(task.updated_at).toLocaleString('ja-JP')}
+                        最終更新:{" "}
+                        {new Date(task.updated_at).toLocaleString("ja-JP")}
                     </p>
-                    
+
                     {/* 削除ボタン - 左下 */}
                     <div className="flex items-center gap-2 mt-2">
                         {showDeleteConfirm ? (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">削除しますか？</span>
+                                <span className="text-sm text-gray-600">
+                                    削除しますか？
+                                </span>
                                 <button
                                     onClick={handleDelete}
                                     disabled={deleting}

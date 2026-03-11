@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,12 @@ import { maskEmail } from "@/utils/maskEmail";
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
     priorities: Array<{ id: number; name: string }>;
-    users: Array<{ id: number; name: string; email: string; username?: string }>;
+    users: Array<{
+        id: number;
+        name: string;
+        email: string;
+        username?: string;
+    }>;
 }
 
 export default function EditProjectPage() {
@@ -43,7 +48,8 @@ export default function EditProjectPage() {
     const [userSearch, setUserSearch] = useState("");
 
     const apiBase = useMemo(() => {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
+        const base =
+            process.env.NEXT_PUBLIC_API_URL || "/api";
         return base.replace(/\/+$/, "");
     }, []);
 
@@ -55,22 +61,27 @@ export default function EditProjectPage() {
             setProjectLoading(true);
             setError("");
             try {
-                const response = await fetch(`${apiBase}/projects/${projectId}`);
+                const response = await fetch(
+                    `${apiBase}/projects/${projectId}`,
+                );
                 const contentType = response.headers.get("content-type");
-                
+
                 if (!contentType || !contentType.includes("application/json")) {
                     throw new Error("データの取得に失敗しました");
                 }
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.message || "プロジェクトの取得に失敗しました");
+                    throw new Error(
+                        errorData?.message ||
+                            "プロジェクトの取得に失敗しました",
+                    );
                 }
 
                 const data = await response.json().catch(() => {
                     throw new Error("レスポンスの解析に失敗しました");
                 });
-                
+
                 if (data) {
                     // 日付をYYYY-MM-DD形式で取得
                     let formattedSchedule = "";
@@ -82,7 +93,7 @@ export default function EditProjectPage() {
                             formattedSchedule = match[0];
                         }
                     }
-                    
+
                     // 既存データをフォームに設定
                     setFormData({
                         overview: data.overview || "",
@@ -100,7 +111,11 @@ export default function EditProjectPage() {
                 }
             } catch (err) {
                 console.error("プロジェクト取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setProjectLoading(false);
             }
@@ -118,25 +133,34 @@ export default function EditProjectPage() {
                 const response = await fetch(`${apiBase}/master/all`);
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                    throw new Error(
+                        "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                    );
                 }
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.message || `マスターデータの取得に失敗しました (${response.status})`);
+                    throw new Error(
+                        errorData?.message ||
+                            `マスターデータの取得に失敗しました (${response.status})`,
+                    );
                 }
                 const data = await response.json().catch(() => {
                     throw new Error("レスポンスの解析に失敗しました");
                 });
-                
+
                 // データの検証
                 if (!data.statuses || !data.priorities || !data.users) {
                     throw new Error("マスターデータの形式が正しくありません");
                 }
-                
+
                 setMasterData(data);
             } catch (err) {
                 console.error("マスターデータの取得エラー:", err);
-                setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "データの読み込みに失敗しました",
+                );
             } finally {
                 setMasterDataLoading(false);
             }
@@ -145,12 +169,16 @@ export default function EditProjectPage() {
         fetchMasterData();
     }, [apiBase]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >,
+    ) => {
         const { id, name, value } = e.target;
         const fieldName = id || name;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [fieldName]: value
+            [fieldName]: value,
         }));
     };
 
@@ -173,13 +201,15 @@ export default function EditProjectPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    user_ids: selectedUsers.map(user => user.id),
+                    user_ids: selectedUsers.map((user) => user.id),
                 }),
             });
 
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。");
+                throw new Error(
+                    "サーバーからのレスポンスがJSON形式ではありません。APIサーバーが起動しているか確認してください。",
+                );
             }
 
             const data = await response.json().catch(() => {
@@ -187,13 +217,17 @@ export default function EditProjectPage() {
             });
 
             if (!response.ok) {
-                throw new Error(data.message || "プロジェクトの更新に失敗しました");
+                throw new Error(
+                    data.message || "プロジェクトの更新に失敗しました",
+                );
             }
 
             alert("プロジェクトが正常に更新されました");
             router.push(`/projects/${projectId}`);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "エラーが発生しました");
+            setError(
+                err instanceof Error ? err.message : "エラーが発生しました",
+            );
         } finally {
             setLoading(false);
         }
@@ -214,7 +248,9 @@ export default function EditProjectPage() {
     return (
         <div className="w-full">
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">プロジェクト編集</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    プロジェクト編集
+                </h1>
                 <p className="text-gray-600">プロジェクト情報を編集します</p>
             </div>
 
@@ -239,7 +275,10 @@ export default function EditProjectPage() {
                         select_title="プロジェクトステータス"
                         select_name="status_id"
                         select_id="status_id"
-                        options={masterData.statuses.map((s) => ({ value: s.id.toString(), label: s.name }))}
+                        options={masterData.statuses.map((s) => ({
+                            value: s.id.toString(),
+                            label: s.name,
+                        }))}
                         value={formData.status_id}
                         onChange={handleChange}
                         required
@@ -249,20 +288,26 @@ export default function EditProjectPage() {
                         select_title="プロジェクト優先度"
                         select_name="priority_id"
                         select_id="priority_id"
-                        options={masterData.priorities.map((p) => ({ value: p.id.toString(), label: p.name }))}
+                        options={masterData.priorities.map((p) => ({
+                            value: p.id.toString(),
+                            label: p.name,
+                        }))}
                         value={formData.priority_id}
                         onChange={handleChange}
                         required
                         isPriority={true}
                     />
-                    <Textarea 
+                    <Textarea
                         textarea_title="プロジェクトの説明"
                         id="detail"
                         value={formData.detail}
                         onChange={handleChange}
                     />
                     <div>
-                        <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                            htmlFor="userSearch"
+                            className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                             担当者
                             <span className="text-red-500 ml-1">*</span>
                         </label>
@@ -277,33 +322,50 @@ export default function EditProjectPage() {
                         {userSearch.trim() && (
                             <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-40 overflow-y-auto">
                                 {masterData.users
-                                    .filter(user => {
+                                    .filter((user) => {
                                         const query = userSearch.toLowerCase();
-                                        const name = (user.name || "").toLowerCase();
-                                        const email = (user.email || "").toLowerCase();
-                                        const username = (user.username || "").toLowerCase();
+                                        const name = (
+                                            user.name || ""
+                                        ).toLowerCase();
+                                        const email = (
+                                            user.email || ""
+                                        ).toLowerCase();
+                                        const username = (
+                                            user.username || ""
+                                        ).toLowerCase();
                                         return (
-                                            (name.includes(query) || email.includes(query) || username.includes(query))
-                                            && !selectedUsers.some(selected => selected.id === user.id)
+                                            (name.includes(query) ||
+                                                email.includes(query) ||
+                                                username.includes(query)) &&
+                                            !selectedUsers.some(
+                                                (selected) =>
+                                                    selected.id === user.id,
+                                            )
                                         );
                                     })
-                                    .map(user => (
+                                    .map((user) => (
                                         <button
                                             type="button"
                                             key={user.id}
                                             onClick={() => {
-                                                setSelectedUsers(prev => [...prev, user]);
+                                                setSelectedUsers((prev) => [
+                                                    ...prev,
+                                                    user,
+                                                ]);
                                                 setUserSearch("");
                                             }}
                                             className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
                                         >
-                                            {user.name || user.username || "名前なし"} ({maskEmail(user.email)})
+                                            {user.name ||
+                                                user.username ||
+                                                "名前なし"}{" "}
+                                            ({maskEmail(user.email)})
                                         </button>
                                     ))}
                             </div>
                         )}
                         <div className="mt-2 flex flex-wrap gap-2">
-                            {selectedUsers.map(user => (
+                            {selectedUsers.map((user) => (
                                 <span
                                     key={user.id}
                                     className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
@@ -311,7 +373,14 @@ export default function EditProjectPage() {
                                     {user.name || user.username || "名前なし"}
                                     <button
                                         type="button"
-                                        onClick={() => setSelectedUsers(prev => prev.filter(selected => selected.id !== user.id))}
+                                        onClick={() =>
+                                            setSelectedUsers((prev) =>
+                                                prev.filter(
+                                                    (selected) =>
+                                                        selected.id !== user.id,
+                                                ),
+                                            )
+                                        }
                                         className="text-blue-500 hover:text-blue-700"
                                         aria-label="担当者を削除"
                                     >
@@ -320,11 +389,13 @@ export default function EditProjectPage() {
                                 </span>
                             ))}
                             {selectedUsers.length === 0 && (
-                                <span className="text-sm text-gray-400">担当者が未選択です</span>
+                                <span className="text-sm text-gray-400">
+                                    担当者が未選択です
+                                </span>
                             )}
                         </div>
                     </div>
-                    <Date 
+                    <Date
                         id="schedule"
                         value={formData.schedule}
                         onChange={handleChange}
@@ -338,10 +409,17 @@ export default function EditProjectPage() {
                         onChange={handleChange}
                     />
                     <div className="pt-4 border-t border-gray-200">
-                        <Button 
-                            button_type="submit" 
-                            button_title={loading ? "更新中..." : "プロジェクトを更新"}
-                            disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0}
+                        <Button
+                            button_type="submit"
+                            button_title={
+                                loading ? "更新中..." : "プロジェクトを更新"
+                            }
+                            disabled={
+                                loading ||
+                                masterDataLoading ||
+                                masterData.statuses.length === 0 ||
+                                masterData.priorities.length === 0
+                            }
                         />
                     </div>
                 </form>
