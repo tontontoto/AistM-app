@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { maskEmail } from "@/utils/maskEmail";
 
 function getCookie(name: string): string | null {
     if (typeof document === "undefined") return null;
@@ -235,7 +236,7 @@ export default function ProjectDetailPage() {
                                     <span key={user.id} className="inline-flex flex-col bg-white border border-gray-200 rounded-lg px-3 py-2">
                                         <span className="font-semibold text-gray-800 text-sm">{user.name || "名前なし"}</span>
                                         {user.email && (
-                                            <span className="text-xs text-gray-500">{user.email}</span>
+                                            <span className="text-xs text-gray-500">{maskEmail(user.email)}</span>
                                         )}
                                     </span>
                                 ))}
@@ -244,7 +245,7 @@ export default function ProjectDetailPage() {
                             <div className="flex flex-col">
                                 <span className="font-semibold text-gray-800">{project.user?.name || "未設定"}</span>
                                 {project.user?.email && (
-                                    <span className="text-sm text-gray-500">{project.user.email}</span>
+                                    <span className="text-sm text-gray-500">{maskEmail(project.user.email)}</span>
                                 )}
                             </div>
                         )}

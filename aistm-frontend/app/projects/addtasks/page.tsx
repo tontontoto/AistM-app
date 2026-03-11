@@ -8,6 +8,7 @@ import Textarea from "../../(components)/textarea";
 import Date from "../../(components)/date";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { maskEmail } from "@/utils/maskEmail";
 
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
@@ -241,7 +242,7 @@ export default function AddTaskPage() {
                                             select_title="担当者"
                                             select_name="user_id"
                                             select_id="user_id"
-                                            options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${u.email})` }))}
+                                            options={masterData.users.map((u) => ({ value: u.id.toString(), label: `${u.name} (${maskEmail(u.email)})` }))}
                                             value={formData.user_id}
                                             onChange={handleChange}
                                             required

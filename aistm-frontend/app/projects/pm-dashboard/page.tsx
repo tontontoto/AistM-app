@@ -38,31 +38,6 @@ type DashboardData = {
     };
 };
 
-type SosItem = {
-    id: number;
-    sender_id: number | null;
-    recipient_id: number | null;
-    project_id: number | null;
-    task_id: number | null;
-    reason: string;
-    message: string | null;
-    read_at: string | null;
-    resolved_at: string | null;
-    created_at: string;
-    sender?: { id: number; name?: string; username?: string; email?: string } | null;
-    project?: { id: number; overview?: string } | null;
-    task?: { id: number; overview?: string } | null;
-};
-
-function formatIsoToSecond(value: string | null | undefined): string {
-    if (!value) return "-";
-    // 例: 2026-02-10T14:36:03.000000Z → 2026-02-10 14:36:03
-    // 例: 2026-02-10T14:36:03Z         → 2026-02-10 14:36:03
-    const base = value.slice(0, 19);
-    if (base.length !== 19) return value;
-    return base.replace("T", " ");
-}
-
 function getCookie(name: string): string | null {
     if (typeof document === "undefined") return null;
     const value = `; ${document.cookie}`;
@@ -73,13 +48,10 @@ function getCookie(name: string): string | null {
 
 export default function PmDashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
-    const [sosItems, setSosItems] = useState<SosItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [skillInputs, setSkillInputs] = useState<Record<number, string>>({});
     const [savingSkills, setSavingSkills] = useState<Record<number, boolean>>({});
-    const [resolvingSos, setResolvingSos] = useState<Record<number, boolean>>({});
-    const [showSosList, setShowSosList] = useState(true);
 
     const apiBase = useMemo(() => {
         const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
@@ -97,29 +69,17 @@ export default function PmDashboardPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [dashboardResponse, sosResponse] = await Promise.all([
-                    fetch(`${apiBase}/pm-dashboard?user_id=${userId}`),
-                    fetch(`${apiBase}/pm-dashboard/sos?user_id=${userId}`),
-                ]);
-
-                const dashboardContentType = dashboardResponse.headers.get("content-type");
-                if (!dashboardContentType || !dashboardContentType.includes("application/json")) {
+                const response = await fetch(`${apiBase}/pm-dashboard?user_id=${userId}`);
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
                     throw new Error("データの取得に失敗しました");
                 }
-                if (!dashboardResponse.ok) {
-                    const errorData = await dashboardResponse.json().catch(() => null);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
                     throw new Error(errorData?.message || "データの取得に失敗しました");
                 }
-                const payload = await dashboardResponse.json();
+                const payload = await response.json();
                 setData(payload);
-
-                if (sosResponse.ok) {
-                    const sosPayload = await sosResponse.json().catch(() => null);
-                    const items = Array.isArray(sosPayload?.items) ? sosPayload.items : [];
-                    setSosItems(items);
-                } else {
-                    setSosItems([]);
-                }
             } catch (err) {
                 console.error("PMダッシュボード取得エラー:", err);
                 setError(err instanceof Error ? err.message : "データの読み込みに失敗しました");
@@ -188,52 +148,6 @@ export default function PmDashboardPage() {
         }
     };
 
-    const handleResolveSos = async (notificationId: number) => {
-        const userId = getCookie("user_id");
-        if (!userId) return;
-
-        const targetProjectId = sosItems.find(item => item.id === notificationId)?.project_id ?? null;
-
-        setResolvingSos(prev => ({ ...prev, [notificationId]: true }));
-        try {
-            const response = await fetch(`${apiBase}/pm-dashboard/sos/${notificationId}/resolve`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ user_id: Number(userId) }),
-            });
-
-            if (!response.ok) {
-                throw new Error("SOSの解決に失敗しました");
-            }
-
-            // 一覧から削除（未解決のみを表示しているため）
-            setSosItems(prev => prev.filter(item => item.id !== notificationId));
-
-            // 画面上のカウントも即時反映
-            setData(prev => {
-                if (!prev) return prev;
-                const projects = prev.projects.map(project => {
-                    if (!targetProjectId || project.id !== targetProjectId) return project;
-                    return { ...project, sos_count: Math.max(0, (project.sos_count || 0) - 1) };
-                });
-                return {
-                    ...prev,
-                    projects,
-                    totals: {
-                        ...prev.totals,
-                        sos_count: Math.max(0, (prev.totals.sos_count || 0) - 1),
-                    },
-                };
-            });
-        } catch (err) {
-            console.error("SOS解決エラー:", err);
-        } finally {
-            setResolvingSos(prev => ({ ...prev, [notificationId]: false }));
-        }
-    };
-
     if (loading) {
         return (
             <div className="w-full flex items-center justify-center py-12">
@@ -262,18 +176,11 @@ export default function PmDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <button
-                    type="button"
-                    onClick={() => setShowSosList(prev => !prev)}
-                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm text-left hover:shadow-md transition-shadow"
-                    aria-expanded={showSosList}
-                >
+                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-gray-500">SOSカウント</p>
                     <p className="text-3xl font-bold text-red-600 mt-2">{data.totals.sos_count}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                        未解決SOSの総数（クリックで一覧を{showSosList ? "閉じる" : "開く"}）
-                    </p>
-                </button>
+                    <p className="text-xs text-gray-400 mt-1">全Help通知の総数</p>
+                </div>
                 <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-gray-500">停滞タスク</p>
                     <p className="text-3xl font-bold text-orange-600 mt-2">{data.totals.stalled_tasks_count}</p>
@@ -285,59 +192,6 @@ export default function PmDashboardPage() {
                     <p className="text-xs text-gray-400 mt-1">あなたが作成したプロジェクト</p>
                 </div>
             </div>
-
-            {showSosList && (
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-lg sm:text-xl font-semibold text-gray-800">SOS一覧（未解決）</h2>
-                        <p className="text-xs text-gray-500">件数: {sosItems.length}</p>
-                    </div>
-
-                    {sosItems.length === 0 ? (
-                        <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-500">
-                            未解決のSOSはありません
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {sosItems.map(item => (
-                                <div
-                                    key={item.id}
-                                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
-                                >
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-semibold text-gray-800 truncate">
-                                                {item.project?.overview || "プロジェクト不明"}
-                                                {item.task?.overview ? ` / ${item.task.overview}` : ""}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                依頼者: {item.sender?.name || item.sender?.username || "不明"} / 理由: {item.reason}
-                                            </p>
-                                            {item.message && (
-                                                <p className="text-xs text-gray-700 mt-2 whitespace-pre-wrap break-words">
-                                                    {item.message}
-                                                </p>
-                                            )}
-                                            <p className="text-[11px] text-gray-400 mt-2">
-                                        送信: {formatIsoToSecond(item.created_at)}
-                                            </p>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleResolveSos(item.id)}
-                                            disabled={resolvingSos[item.id]}
-                                            className="shrink-0 px-3 py-2 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 disabled:opacity-50"
-                                        >
-                                            {resolvingSos[item.id] ? "解決中..." : "解決"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
 
             <div className="space-y-6">
                 {data.projects.map(project => (

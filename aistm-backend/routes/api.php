@@ -11,10 +11,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PmDashboardController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', function () {
-    return response()->json(['ok' => true]);
-});
-
 Route::post('/signup', RegisterController::class);
 Route::get('/email/check', CheckEmailController::class);
 Route::post('/login', LoginController::class);
@@ -42,8 +38,6 @@ Route::put('/notifications/{id}/read', [NotificationController::class, 'markRead
 
 // PM向けダッシュボード
 Route::get('/pm-dashboard', [PmDashboardController::class, 'index']);
-Route::get('/pm-dashboard/sos', [PmDashboardController::class, 'sosIndex']);
-Route::put('/pm-dashboard/sos/{id}/resolve', [PmDashboardController::class, 'resolveSos']);
 
 // マスターデータ関連のルート
 Route::get('/master/statuses', [MasterDataController::class, 'getStatuses']);

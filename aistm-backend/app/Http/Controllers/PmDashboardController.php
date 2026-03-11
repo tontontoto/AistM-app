@@ -68,7 +68,7 @@ class PmDashboardController extends Controller
 
         foreach ($projects as $project) {
             $projectNotifications = $notificationsByProject->get($project->id, collect());
-            $sosCount = $projectNotifications->whereNull('resolved_at')->count();
+            $sosCount = $projectNotifications->count();
             $totalSos += $sosCount;
 
             $requiredSkills = $project->skills->map(fn ($skill) => $skill->name)->values();
@@ -90,7 +90,7 @@ class PmDashboardController extends Controller
                     continue;
                 }
 
-                $createdAt = Carbon::parse($task->start_date ?? $task->created_at);
+                $createdAt = Carbon::parse($task->created_at);
                 $schedule = Carbon::parse($task->schedule);
 
                 if ($schedule->lessThanOrEqualTo($createdAt)) {
@@ -151,92 +151,6 @@ class PmDashboardController extends Controller
                 'sos_count' => $totalSos,
                 'stalled_tasks_count' => $totalStalled,
             ],
-        ]);
-    }
-
-    /**
-     * PM向けSOS(Help)一覧を取得（通知とは別枠）
-     */
-    public function sosIndex(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $userId = (int) $request->input('user_id');
-
-        $projectIds = Project::where('created_by', $userId)->pluck('id')->all();
-
-        $sosNotifications = Notification::with(['sender', 'project', 'task'])
-            ->whereIn('project_id', $projectIds)
-            ->whereIn('reason', self::HELP_REASONS)
-            ->whereNull('resolved_at')
-            ->orderByDesc('created_at')
-            ->get();
-
-        return response()->json([
-            'items' => $sosNotifications,
-        ]);
-    }
-
-    /**
-     * SOS(Help)を解決済みにする（未解決カウントから除外）
-     */
-    public function resolveSos(Request $request, string $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $userId = (int) $request->input('user_id');
-
-        $notification = Notification::with(['project'])->findOrFail($id);
-
-        if (!$notification->project_id || !$notification->project) {
-            return response()->json([
-                'message' => 'Project not found for this SOS',
-            ], 422);
-        }
-
-        if (!in_array($notification->reason, self::HELP_REASONS, true)) {
-            return response()->json([
-                'message' => 'Not a SOS notification',
-            ], 422);
-        }
-
-        if ((int) $notification->project->created_by !== $userId) {
-            return response()->json([
-                'message' => 'Forbidden',
-            ], 403);
-        }
-
-        if ($notification->resolved_at) {
-            return response()->json([
-                'message' => 'Already resolved',
-                'notification' => $notification,
-            ]);
-        }
-
-        $notification->resolved_at = now();
-        $notification->save();
-
-        return response()->json([
-            'message' => 'SOS resolved',
-            'notification' => $notification->load(['sender', 'project', 'task']),
         ]);
     }
 }

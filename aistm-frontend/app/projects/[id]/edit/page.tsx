@@ -10,6 +10,7 @@ import Textarea from "../../../(components)/textarea";
 import Date from "../../../(components)/date";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { maskEmail } from "@/utils/maskEmail";
 
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
@@ -296,7 +297,7 @@ export default function EditProjectPage() {
                                             }}
                                             className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
                                         >
-                                            {user.name || user.username || "名前なし"} ({user.email})
+                                            {user.name || user.username || "名前なし"} ({maskEmail(user.email)})
                                         </button>
                                     ))}
                             </div>

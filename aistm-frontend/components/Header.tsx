@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import UserAvatar from "./UserAvatar";
+import { maskEmail } from "@/utils/maskEmail";
 
 function getCookie(name: string): string | null {
     if (typeof document === "undefined") return null;
@@ -49,56 +49,41 @@ const reasonLabels: Record<string, string> = {
 };
 
 export default function Header() {
-    const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [avatarColor, setAvatarColor] = useState<string | undefined>(undefined);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
-    const [themeMode, setThemeMode] = useState<"system" | "light" | "dark">("system");
 
     const apiBase = useMemo(() => {
-        // 本番で env 未設定だと localhost を向いて通信不能になるため、同一オリジンの /api をデフォルトにする
-        const base = process.env.NEXT_PUBLIC_API_URL || "/api";
+        const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/";
         return base.replace(/\/+$/, "");
     }, []);
 
     useEffect(() => {
-        const syncAuth = () => {
-            const auth = getCookie("auth");
-            const userId = getCookie("user_id");
-            const loggedIn = auth === "1";
-            setIsLoggedIn(loggedIn);
+        const auth = getCookie("auth");
+        const userId = getCookie("user_id");
+        setIsLoggedIn(auth === "1");
 
-            if (!loggedIn || !userId) {
-                setUser(null);
-                setAvatarColor(undefined);
-                setNotifications([]);
-                setNotificationsOpen(false);
-                return;
-            }
-
+        if (auth === "1" && userId) {
             // ユーザー情報を取得
             fetch(`${apiBase}/users/${userId}`)
-                .then((res) => res.json())
-                .then((data) => {
+                .then(res => res.json())
+                .then(data => {
                     setUser(data);
                     if (data?.avatar_color) {
                         setAvatarColor(data.avatar_color);
                     }
                 })
-                .catch((err) => console.error("ユーザー情報取得エラー:", err));
+                .catch(err => console.error("ユーザー情報取得エラー:", err));
 
             // ローカル保存済みの色があれば即時反映
             const savedColor = localStorage.getItem(`avatar_color_${userId}`);
             if (savedColor) {
                 setAvatarColor(savedColor);
             }
-        };
-
-        // ルート遷移後に cookie が更新されても反映されるよう同期
-        syncAuth();
+        }
 
         const handleAvatarColorUpdate = (event: Event) => {
             const customEvent = event as CustomEvent<{ userId: string; color: string }>;
@@ -118,59 +103,14 @@ export default function Header() {
             }
         };
 
-        const handleFocus = () => {
-            syncAuth();
-        };
-
         window.addEventListener("avatarColorUpdated", handleAvatarColorUpdate as EventListener);
         window.addEventListener("storage", handleStorage);
-        window.addEventListener("focus", handleFocus);
 
         return () => {
             window.removeEventListener("avatarColorUpdated", handleAvatarColorUpdate as EventListener);
             window.removeEventListener("storage", handleStorage);
-            window.removeEventListener("focus", handleFocus);
         };
-    }, [apiBase, pathname]);
-
-    // テーマ（OSのダークモード対応 + アプリ内切り替え）
-    useEffect(() => {
-        const KEY = "theme";
-        const read = () => {
-            const saved = localStorage.getItem(KEY);
-            if (saved === "light" || saved === "dark" || saved === "system") return saved;
-            return "system";
-        };
-
-        const apply = (mode: "system" | "light" | "dark") => {
-            const root = document.documentElement;
-            root.classList.remove("dark");
-            const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-            const shouldDark = mode === "dark" || (mode === "system" && prefersDark);
-            if (shouldDark) root.classList.add("dark");
-        };
-
-        const initial = read();
-        setThemeMode(initial);
-        apply(initial);
-
-        const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-        const onChange = () => {
-            const current = read();
-            if (current === "system") apply("system");
-        };
-        mq?.addEventListener?.("change", onChange);
-        return () => mq?.removeEventListener?.("change", onChange);
-    }, []);
-
-    const toggleTheme = () => {
-        const KEY = "theme";
-        const next = themeMode === "dark" ? "light" : "dark";
-        localStorage.setItem(KEY, next);
-        setThemeMode(next);
-        const root = document.documentElement;
-        root.classList.toggle("dark", next === "dark");
-    };
+    }, [apiBase]);
 
     const fetchNotifications = async (userId: string, showLoading = true) => {
         if (showLoading) {
@@ -249,7 +189,6 @@ export default function Header() {
     const unreadCount = notifications.filter(item => !item.read_at).length;
 
     const logoHref = isLoggedIn ? "/projects" : "/";
-    const avatarHref = isLoggedIn ? "/user/profile" : "/";
 
     return (
         <header className="w-full py-4 px-4 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -264,37 +203,12 @@ export default function Header() {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        aria-label="ライト/ダーク切り替え"
-                        title="ライト/ダーク切り替え"
-                    >
-                        {themeMode === "dark" ? (
-                            // Moon
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-200" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M21 14.2A7.6 7.6 0 0 1 9.8 3a.8.8 0 0 0-1 .96A9 9 0 1 0 20.04 15.2a.8.8 0 0 0-.96-1Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        ) : (
-                            // Sun
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-200" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-16a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 18a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 5.64a1 1 0 0 1 1.42 0l.7.7a1 1 0 1 1-1.41 1.42l-.71-.71a1 1 0 0 1 0-1.41Zm13.44 13.44a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.42 1.41l-.7-.7a1 1 0 0 1 0-1.42ZM2 13a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm18 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM5.64 19.78a1 1 0 0 1 0-1.41l.7-.71a1 1 0 1 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Zm13.44-13.44a1 1 0 0 1 0-1.42l.7-.7a1 1 0 1 1 1.42 1.41l-.71.71a1 1 0 0 1-1.41 0Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        )}
-                    </button>
                     {isLoggedIn && (
                         <div className="relative">
                             <button
                                 type="button"
                                 onClick={handleToggleNotifications}
-                                className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
                                 aria-label="通知"
                             >
                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +242,7 @@ export default function Header() {
                                                                 {item.task?.overview || "タスク"}
                                                             </p>
                                                             <p className="mt-1 text-xs text-gray-500">
-                                                                送信者: {item.sender?.name || item.sender?.username || item.sender?.email || "不明"}
+                                                                送信者: {item.sender?.name || item.sender?.username || (item.sender?.email ? maskEmail(item.sender.email) : "不明")}
                                                             </p>
                                                             <p className="mt-1 text-xs text-gray-600">
                                                                 理由: {reasonLabels[item.reason] || item.reason}
@@ -352,7 +266,7 @@ export default function Header() {
                             )}
                         </div>
                     )}
-                    <Link href={avatarHref}>
+                    <Link href="/user/profile">
                         <UserAvatar
                             name={user?.name}
                             username={user?.username}

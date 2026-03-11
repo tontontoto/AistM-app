@@ -15,12 +15,10 @@ class Notification extends Model
         'reason',
         'message',
         'read_at',
-        'resolved_at',
     ];
 
     protected $casts = [
         'read_at' => 'datetime',
-        'resolved_at' => 'datetime',
     ];
 
     public function sender(): BelongsTo

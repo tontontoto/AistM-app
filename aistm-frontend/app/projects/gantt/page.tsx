@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import GanttChartClient, { type GanttRow } from "./GanttChartClient";
+import { maskEmail } from "@/utils/maskEmail";
 
 type ApiTask = {
     id: number;
@@ -155,7 +156,7 @@ export default function GanttPage() {
                 const projectId = task.project?.id ?? 0;
                 const projectName = task.project?.overview || "プロジェクト不明";
                 const taskName = task.overview || "タスク";
-                const assignee = task.user?.name || task.user?.username || task.user?.email || undefined;
+                const assignee = task.user?.name || task.user?.username || (task.user?.email ? maskEmail(task.user.email) : undefined);
 
                 // y軸ラベルはユニークになるようIDを含める（重複ラベルだと同じ行に重なるため）
                 const label = clampText(`#${task.id} ${taskName}`, 34);

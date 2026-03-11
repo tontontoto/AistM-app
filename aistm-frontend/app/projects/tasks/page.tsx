@@ -262,7 +262,7 @@ export default function TasksPage() {
                 </div>
             )}
             {confirmHelp.open && confirmHelp.task && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-5">
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">送信しますか？</h3>
                         <p className="text-sm text-gray-600 mb-4">
@@ -279,9 +279,7 @@ export default function TasksPage() {
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    const task = confirmHelp.task;
-                                    if (!task) return;
-                                    await handleSendHelp(task.id, confirmHelp.reasonValue);
+                                    await handleSendHelp(confirmHelp.task.id, confirmHelp.reasonValue);
                                     setConfirmHelp({ open: false, task: null, reasonLabel: "", reasonValue: "" });
                                 }}
                                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"

@@ -8,6 +8,7 @@ import Textarea from "../../(components)/textarea";
 import Date from "../../(components)/date";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { maskEmail } from "@/utils/maskEmail";
 
 interface MasterData {
     statuses: Array<{ id: number; name: string }>;
@@ -172,11 +173,11 @@ export default function AddProjectPage() {
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full min-h-screen from-gray-50 via-white to-gray-50">
             <div className="max-w-4xl mx-auto">
                 {/* エラーメッセージ */}
                 {error && (
-                    <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
+                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-2">
                         <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -185,8 +186,8 @@ export default function AddProjectPage() {
                 )}
 
                 {masterDataLoading ? (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6">
-                        <div className="flex items-center justify-center py-10">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10">
+                        <div className="flex items-center justify-center py-12">
                             <div className="flex flex-col items-center gap-3">
                                 <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -197,15 +198,20 @@ export default function AddProjectPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 sm:p-6">
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl  md:p-10">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* 基本情報セクション */}
-                            <div className="border-b border-gray-100 pb-4">
-                                <h2 className="text-base font-semibold text-gray-800 mb-3">基本情報</h2>
-                                <div className="space-y-4">
-                                    {/* プロジェクト名 */}
+                            <div className="border-b border-gray-100 pb-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    基本情報
+                                </h2>
+                                <div className="space-y-6">
+                                    {/* プロジェクト名 - 大きめに表示 */}
                                     <div className="w-full">
-                                        <label htmlFor="overview" className="block text-sm font-semibold text-gray-800 mb-2">
+                                        <label htmlFor="overview" className="block text-lg font-semibold text-gray-800 mb-3">
                                             プロジェクト名
                                             <span className="text-red-500 ml-1">*</span>
                                         </label>
@@ -217,10 +223,10 @@ export default function AddProjectPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="プロジェクト名を入力してください"
-                                            className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
+                                            className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-800 placeholder-gray-400 shadow-sm"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Select
                                             select_title="プロジェクトステータス"
                                             select_name="status_id"
@@ -254,7 +260,7 @@ export default function AddProjectPage() {
                                             className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                                         />
                                         {userSearch.trim() && (
-                                            <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-32 overflow-y-auto">
+                                            <div className="mt-2 border border-gray-200 rounded-lg bg-white max-h-40 overflow-y-auto">
                                                 {masterData.users
                                                     .filter(user => {
                                                         const query = userSearch.toLowerCase();
@@ -276,7 +282,7 @@ export default function AddProjectPage() {
                                                             }}
                                                             className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
                                                         >
-                                                            {user.name || user.username || "名前なし"} ({user.email})
+                                                            {user.name || user.username || "名前なし"} ({maskEmail(user.email)})
                                                         </button>
                                                     ))}
                                             </div>
@@ -285,7 +291,7 @@ export default function AddProjectPage() {
                                             {selectedUsers.map(user => (
                                                 <span
                                                     key={user.id}
-                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs"
+                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
                                                 >
                                                     {user.name || user.username || "名前なし"}
                                                     <button
@@ -313,9 +319,14 @@ export default function AddProjectPage() {
                             </div>
 
                             {/* 詳細情報セクション */}
-                            <div className="border-b border-gray-100 pb-4">
-                                <h2 className="text-base font-semibold text-gray-800 mb-3">詳細情報</h2>
-                                <div className="space-y-4">
+                            <div className="border-b border-gray-100 pb-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    詳細情報
+                                </h2>
+                                <div className="space-y-6">
                                     <Textarea 
                                         textarea_title="プロジェクトの説明"
                                         id="detail"
@@ -334,10 +345,10 @@ export default function AddProjectPage() {
                             </div>
 
                             {/* 送信ボタン */}
-                            <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
+                            <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
                                 <Link
                                     href="/projects"
-                                    className="w-full sm:w-auto text-center px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                                 >
                                     キャンセル
                                 </Link>
@@ -347,7 +358,6 @@ export default function AddProjectPage() {
                                     disabled={loading || masterDataLoading || masterData.statuses.length === 0 || masterData.priorities.length === 0}
                                 />
                             </div>
-                            <p className="text-gray-500 text-xs text-right">(作成するあなたが、このプロジェクトのリーダーになります。)</p>
                         </form>
                     </div>
                 )}
