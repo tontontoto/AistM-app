@@ -16,7 +16,7 @@
 # リダイレクト設定（必要に応じて）
 [[redirects]]
   from = "/api/*"
-  to = "https://aistm-app-production-bd97.up.railway.app"
+  to = "https://aistm-app-production-bd97.up.railway.app/api/:splat"
   status = 200
   force = true
 
